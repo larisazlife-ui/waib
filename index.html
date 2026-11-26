@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Маршрут нового продукта</title>
+<meta name="description" content="Stage-gate маршрут вывода нового продукта через подразделения компании с юридической проверкой, сверкой с рынком и паспортом продукта.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="js/stack-table.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">Маршрут нового продукта</div>
+  <select id="psel" aria-label="Продукт"></select>
+  <button class="btn" data-act="new">Новый продукт</button>
+  <span class="tools">
+    <button class="btn" data-act="export" title="Показать резервную копию всех продуктов в формате JSON">Выгрузить</button>
+    <button class="btn" data-act="import" title="Загрузить продукты из файла JSON">Загрузить</button>
+    <button class="btn" data-act="fixtures" title="Добавить 6 условных продуктов для тестирования">Тестовые данные</button>
+    <input type="file" id="importfile" accept=".json,application/json" hidden>
+  </span>
+  <span class="sync" id="sync" role="status">Локальный режим</span>
+</div></header>
+<section id="exportbox" class="exportbox" hidden><div class="wrap">
+  <label class="f" for="exporttext">Резервная копия продуктов (JSON)
+    <textarea class="i" id="exporttext" spellcheck="false"></textarea></label>
+  <p class="small" id="exportmsg" role="status"></p>
+  <div class="dec">
+    <button class="btn pri" data-act="exportcopy">Скопировать</button>
+    <button class="btn" data-act="exportfile">Скачать файл</button>
+    <button class="btn" data-act="importtext" title="Загрузить продукты из текста в поле">Загрузить из поля</button>
+    <button class="btn" data-act="exportclose">Закрыть</button>
+  </div>
+</div></section>
+<div id="app"></div>
+
+<!-- Порядок важен: помощники → технологические карты → состояние → отрисовка → действия → запуск -->
+<script src="js/util.js"></script>
+<script src="js/templates/endow.js"></script>
+<script src="js/templates/osns.js"></script>
+<script src="js/templates/annuity.js"></script>
+<script src="js/templates/index.js"></script>
+<script src="js/state.js"></script>
+<script src="js/fixtures.js"></script>
+<script src="js/render.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

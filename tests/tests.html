@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тесты маршрута</title>
+<style>
+:root{color-scheme:light dark}
+body{font:15px/1.5 system-ui,sans-serif;margin:24px;max-width:900px;background:Canvas;color:CanvasText}
+.ok{color:#0b7a3b}.bad{color:#c0261d;font-weight:600}
+li{margin:2px 0}#sum{font-size:20px;font-weight:600}
+</style>
+</head>
+<body>
+<h1>Тесты правил маршрута и расчётов</h1>
+<p id="sum">…</p>
+<ol id="out"></ol>
+
+<script src="../js/util.js"></script>
+<script src="../js/templates/annuity.js"></script>
+<script src="../js/templates/endow.js"></script>
+<script src="../js/templates/osns.js"></script>
+<script src="../js/templates/index.js"></script>
+<script src="../js/state.js"></script>
+<script src="../js/fixtures.js"></script>
+<script>
+const res=[];
+function t(name,fn){try{const r=fn();res.push([name,r===true||r===undefined,r===true||r===undefined?'':'получено: '+JSON.stringify(r)])}catch(e){res.push([name,false,String(e)])}}
+const eq=(a,b)=>a===b||JSON.stringify(a)===JSON.stringify(b)?true:{ожидалось:b,получено:a};
+const near=(a,b,eps=1e-6)=>Math.abs(a-b)<eps?true:{ожидалось:b,получено:a};
+function approveAll(p,upto){const L=S(p);for(let i=0;i<=upto;i++){p.status[L[i].id]='approved'}}
+function fillStage(p,i){const s=S(p)[i];for(const x of s.fields)if(x.r&&!filled(p.f[x.k]))p.f[x.k]=x.t==='sel'?x.o[1]:x.t==='num'?'1':'x';p.checks[s.id]=s.checks.map(()=>true)}
+function demoProduct(tpl){const p=blank(tpl),ids=TPL[tpl].demo(p);ids.forEach(id=>{if(!(p.skip||[]).includes(id))p.status[id]='approved'});return p}
+const idx=(p,id)=>S(p).findIndex(s=>s.id===id);
+
+/* ---- Технологические карты ---- */
+t('Карт три: пенсионный аннуитет, накопительное страхование, ОСНС',()=>eq(Object.keys(TPL),['annuity','endow','osns']));
+t('Карты «Производство» больше нет',()=>eq(typeof MANUF,'undefined'));
+t('Аннуитет: 14 этапов, 2 по выбору',()=>eq([ANNUITY.stages.length,ANNUITY.stages.filter(s=>s.opt).map(s=>s.id)],[14,['reins','audit']]));
+t('Накопительное: 14 этапов, 2 по выбору',()=>eq([ENDOW.stages.length,ENDOW.stages.filter(s=>s.opt).map(s=>s.id)],[14,['reins','audit']]));
+t('ОСНС: 13 этапов, перестрахование по выбору',()=>eq([OSNS.stages.length,OSNS.stages.filter(s=>s.opt).map(s=>s.id)],[13,['reins']]));
+t('Во всех картах юристы и комплаенс идут перед финальным решением',()=>{for(const tp of Object.values(TPL)){const ids=tp.stages.map(s=>s.id),f=ids.indexOf('final');if(!(ids.indexOf('legal')>=0&&ids.indexOf('legal')<f&&ids.indexOf('compl')<f))return tp.id}});
+t('Последний этап каждой карты — финальное решение со сверкой',()=>Object.values(TPL).every(tp=>tp.stages.at(-1).gates===1&&tp.stages.at(-1).id==='final'));
+t('Анализ рынка в каждой карте требует таблицу конкурентов',()=>Object.values(TPL).every(tp=>tp.stages.find(s=>s.id==='market').comps===1));
+t('Ключи полей внутри карты не повторяются',()=>{for(const tp of Object.values(TPL)){const k=tp.stages.flatMap(s=>s.fields.map(x=>x.k));if(new Set(k).size!==k.length)return tp.id}});
+t('У каждой карты есть расчёт, сверка, демо и пороги по умолчанию',()=>Object.values(TPL).every(tp=>['calc','gates','figs','side','head','demo'].every(m=>typeof tp[m]==='function')&&Object.keys(tp.defaults).length>0));
+
+/* ---- Правила маршрута ---- */
+t('Новый продукт: первый этап открыт, второй заблокирован',()=>{const p=blank('osns');return eq([st(p,0),st(p,1)],['op','lock'])});
+t('Исключённые этапы не входят в маршрут',()=>eq([S(blank('annuity',['reins','audit'])).length,S(blank('osns',['reins'])).length],[12,12]));
+t('После согласования этапа открывается следующий',()=>{const p=blank('endow');p.status.idea='approved';return eq([st(p,0),st(p,1),st(p,2)],['ok','op','lock'])});
+t('Возврат на доработку показывается как «rw»',()=>{const p=blank('osns');p.status.idea='rework';return eq(st(p,0),'rw')});
+t('firstOpen указывает на первый несогласованный',()=>{const p=blank('endow');approveAll(p,3);return eq(firstOpen(p),4)});
+t('Пустой этап нельзя согласовать: есть недостающее',()=>missing(blank('osns'),0).length>0);
+t('Недостающее ссылается на поля и пункты чек-листа',()=>{const m=missing(blank('osns'),0);return m.some(x=>x.ref==='f_desc')&&m.some(x=>x.ref==='chk_0')});
+t('Заполненный этап с закрытым чек-листом готов к согласованию',()=>{const p=blank('endow');fillStage(p,0);return eq(missing(p,0),[])});
+t('Анализ рынка требует не менее 3 конкурентов',()=>{const p=blank('osns');fillStage(p,1);p.comps=[{n:'A',p:'0.3'},{n:'B',p:'0.32'}];const a=missing(p,1).length;p.comps.push({n:'C',p:'0.29'});return eq([a,missing(p,1).length],[1,0])});
+t('Конкурент без значения не засчитывается',()=>{const p=blank('endow');fillStage(p,1);p.comps=[{n:'A',p:'9'},{n:'B',p:'9.2'},{n:'C',p:''}];return eq(missing(p,1).length,1)});
+t('Финальный этап требует согласования всех предыдущих',()=>{const p=blank('osns');const L=S(p);fillStage(p,L.length-1);approveAll(p,L.length-3);return eq(missing(p,L.length-1).map(x=>x.go),[L.length-2])});
+t('Отзыв согласования возвращает этап и все последующие',()=>{const p=blank('annuity');approveAll(p,6);revokeFrom(p,3);return eq(S(p).map(s=>p.status[s.id]||'').slice(0,8),['approved','approved','approved','draft','draft','draft','draft',''])});
+t('Отзыв не трогает этапы «на доработке»',()=>{const p=blank('osns');approveAll(p,2);p.status.uw='rework';revokeFrom(p,1);return eq(p.status.uw,'rework')});
+t('Продукты по удалённой карте скрываются',()=>eq([known({tpl:'manuf'}),known({tpl:'osns'}),known({})],[false,true,false]));
+
+/* ---- Расчёты: пенсионный аннуитет ---- */
+t('Демо «Стабильный доход»: спред, разрыв дюраций, средняя премия',()=>{const c=calc(demoProduct('annuity'));return near(c.spread,3)===true&&near(c.gap,1.5)===true&&near(c.avgPrem,4200e6/600)});
+t('Выплата к рынку 6950 / средняя 6933,3',()=>near(calc(demoProduct('annuity')).r,6950/((6700+7200+6900)/3)));
+t('Выплата ниже средней на 20% → 0 баллов',()=>{const p=demoProduct('annuity');p.f.payout=String(calc(p).avg*.8);return near(calc(p).parts[3][1],0)});
+t('CSM ≤ 0 → отклонение',()=>{const p=demoProduct('annuity');p.f.csm='-5';return eq(gates(p)[5].ok,false)});
+t('Индексация без значения юриста не оценивается',()=>eq(gates(demoProduct('annuity'))[3].ok,null));
+
+/* ---- Расчёты: ОСНС ---- */
+t('ОСНС демо: комбинированный коэффициент = убыточность + расходы + комиссия',()=>near(calc(demoProduct('osns')).cr,58+12+10));
+t('ОСНС демо: ожидаемые выплаты = премии × убыточность',()=>near(calc(demoProduct('osns')).claims,1500*.58));
+t('ОСНС: тариф ниже среднего рынка даёт 20 баллов',()=>near(calc(demoProduct('osns')).parts[3][1],20));
+t('ОСНС: тариф выше среднего на 50% → 0 баллов',()=>{const p=demoProduct('osns');p.f.tariff=String(calc(p).avg*1.5);return near(calc(p).parts[3][1],0)});
+t('ОСНС: тариф выше предела юриста → отклонение',()=>{const p=demoProduct('osns');p.f.maxTariff='0.25';return eq(gates(p)[1].ok,false)});
+t('ОСНС: без предела юриста точка не оценивается',()=>eq(gates(demoProduct('osns'))[1].ok,null));
+t('ОСНС: комбинированный коэффициент выше порога → отклонение',()=>{const p=demoProduct('osns');p.f.lr='90';return eq(gates(p)[3].ok,false)});
+t('ОСНС: пороги по умолчанию',()=>eq([blank('osns').f.maxCR,blank('osns').f.maxEventLim],['100','10']));
+
+/* ---- Расчёты: накопительное страхование ---- */
+t('Накопительное демо: спред = доходность портфеля − доходность клиента',()=>near(calc(demoProduct('endow')).spread,11.5-9.4));
+t('Накопительное: доходность клиента не ниже рынка даёт 20 баллов',()=>near(calc(demoProduct('endow')).parts[3][1],20));
+t('Накопительное: доходность ниже рынка на 20% → 0 баллов',()=>{const p=demoProduct('endow');p.f.clientYield=String(calc(p).avg*.8);return near(calc(p).parts[3][1],0)});
+t('Накопительное: гарантированная ставка выше предела → отклонение',()=>{const p=demoProduct('endow');p.f.maxTech='3';return eq(gates(p)[3].ok,false)});
+t('Накопительное: расторжения выше порога → отклонение',()=>{const p=demoProduct('endow');p.f.lapse='20';return eq(gates(p)[8].ok,false)});
+t('Накопительное: аудит исключён в демо',()=>eq(S(demoProduct('endow')).some(s=>s.id==='audit'),false));
+
+/* ---- Общее ---- */
+t('Конкурентная плотность: 1–2→15, 3–5→10, 6–10→5, >10→2',()=>eq([1,2,3,5,6,10,11].map(density),[15,15,10,10,5,5,2]));
+t('Разбор вставки: табуляция, «;», «|», строки без числа пропускаются',()=>eq(parseComps('КСЖ А\t6 700\nКСЖ Б;7200\nзаголовок;цена\nКСЖ В | 6900,5\n\nпусто'),[{n:'КСЖ А',p:'6700'},{n:'КСЖ Б',p:'7200'},{n:'КСЖ В',p:'6900.5'}]));
+t('Числа в формате ru-RU: пробелы и запятая',()=>eq(num('1 000 000,5'),1000000.5));
+t('Экранирование HTML',()=>eq(esc('<img src=x onerror="a">&\''),'&lt;img src=x onerror=&quot;a&quot;&gt;&amp;&#39;'));
+
+/* ---- Тестовые данные (js/fixtures.js) ---- */
+const FX=buildFixtures(Date.now());
+const gateOk=p=>gates(p).map(g=>g.ok);
+const lastIdx=p=>S(p).length-1;
+t('Тестовых продуктов 6, по всем трём картам',()=>eq([Object.keys(FX).length,[...new Set(Object.values(FX).map(p=>p.tpl))].sort()],[6,['annuity','endow','osns']]));
+t('Демо и тестовые данные: значения списков допустимы',()=>{const bad=[],all=[...Object.values(FX),...Object.keys(TPL).map(demoProduct)];for(const p of all)for(const s of T(p).stages)for(const x of s.fields)
+  if(x.t==='sel'&&filled(p.f[x.k])&&!x.o.includes(p.f[x.k]))bad.push(p.f.name+':'+x.k);return bad.length?bad:true});
+t('Демо и тестовые данные: числовые поля — числа, нет лишних ключей',()=>{const bad=[],all=[...Object.values(FX),...Object.keys(TPL).map(demoProduct)];for(const p of all){const t2=T(p),keys=new Set(['name','compSrc',...Object.keys(t2.defaults),...t2.stages.flatMap(s=>s.fields.map(x=>x.k))]);
+  for(const s of t2.stages)for(const x of s.fields)if(x.t==='num'&&filled(p.f[x.k])&&!isFinite(num(p.f[x.k])))bad.push(p.f.name+':'+x.k);
+  for(const k of Object.keys(p.f))if(!k.startsWith('resp_')&&!keys.has(k))bad.push(p.f.name+': лишний ключ '+k)}return bad.length?bad:true});
+t('Согласованные этапы демо и тестовых данных действительно готовы',()=>{const bad=[],all=[...Object.values(FX),...Object.keys(TPL).map(demoProduct)];for(const p of all)S(p).forEach((s,i)=>{
+  if(p.status[s.id]==='approved'&&!s.gates&&missing(p,i).filter(x=>!x.ref?.startsWith('chk_')).length)bad.push(p.f.name+':'+s.id+' → '+missing(p,i).map(x=>x.t).join('; '))});return bad.length?bad:true});
+t('Цепочка не нарушена: после несогласованного этапа нет согласованных',()=>{const bad=[];for(const p of Object.values(FX)){let gap=false;
+  for(const s of S(p)){if(p.status[s.id]!=='approved')gap=true;else if(gap)bad.push(p.id+':'+s.id)}}return bad.length?bad:true});
+
+t('T1 аннуитет: 14 этапов согласованы, 11 контрольных точек в норме',()=>{const p=FX['test-t1-annuity-ready'];return S(p).every(s=>p.status[s.id]==='approved')&&eq(gateOk(p),Array(11).fill(true))});
+t('T2 аннуитет: финальный этап готов к решению, 6 отклонений',()=>{const p=FX['test-t2-annuity-deviations'];return eq([st(p,lastIdx(p)),missing(p,lastIdx(p)).length,gateOk(p).filter(x=>x===false).length],['op',0,6])});
+t('T3 аннуитет: андеррайтинг на доработке, следующий этап заблокирован',()=>{const p=FX['test-t3-annuity-rework'];return eq([st(p,idx(p,'uw')),st(p,idx(p,'inv')),!!p.comment.uw],['rw','lock',true])});
+t('T3 аннуитет: не хватает полей и пункта чек-листа',()=>{const p=FX['test-t3-annuity-rework'],m=missing(p,idx(p,'uw')).map(x=>x.ref);return m.includes('f_minprem')&&m.includes('f_clientDocs')&&m.includes('chk_2')});
+
+t('T4 ОСНС: 13 этапов согласованы, 10 контрольных точек в норме',()=>{const p=FX['test-t4-osns-ready'];return S(p).every(s=>p.status[s.id]==='approved')&&eq(gateOk(p),Array(10).fill(true))});
+t('T4 ОСНС: комбинированный коэффициент 77%',()=>near(calc(FX['test-t4-osns-ready']).cr,77));
+t('T5 ОСНС: юридическая экспертиза в работе, комплаенс заблокирован',()=>{const p=FX['test-t5-osns-risks'];return eq([st(p,idx(p,'legal')),st(p,idx(p,'compl'))],['op','lock'])});
+t('T5 ОСНС: отклонения — балл, предел тарифа, коридор, CR, убыток от события, срок выплаты',()=>{const g=gateOk(FX['test-t5-osns-risks']);
+  return eq([g[0],g[1],g[2],g[3],g[5],g[6]],[false,false,false,false,false,false])});
+t('T5 ОСНС: ЕСБД и юридическая проверка ещё не оценены',()=>{const g=gateOk(FX['test-t5-osns-risks']);return eq([g[8],g[9]],[null,null])});
+
+t('T6 накопительное: аудит исключён, 13 этапов согласованы',()=>{const p=FX['test-t6-endow-ready'];return eq([S(p).length,S(p).every(s=>p.status[s.id]==='approved')],[13,true])});
+t('T6 накопительное: 11 контрольных точек в норме',()=>eq(gateOk(FX['test-t6-endow-ready']),Array(11).fill(true)));
+t('Журнал тестовых продуктов отсортирован от новых к старым',()=>Object.values(FX).every(p=>p.log.every((l,i)=>!i||p.log[i-1].t>=l.t)));
+
+const bad=res.filter(r=>!r[1]).length;
+document.getElementById('out').innerHTML=res.map(r=>`<li class="${r[1]?'ok':'bad'}">${r[1]?'✓':'✗'} ${esc(r[0])}${r[2]?' — '+esc(r[2]):''}</li>`).join('');
+const sum=document.getElementById('sum');sum.textContent=bad?`Провалено: ${bad} из ${res.length}`:`Пройдено тестов: ${res.length} из ${res.length}`;sum.className=bad?'bad':'ok';
+window.__TESTS__={total:res.length,failed:bad};
+</script>
+</body>
+</html>

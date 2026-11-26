@@ -1,0 +1,1019 @@
+<title>Маршрут нового продукта</title>
+<meta name="description" content="Stage-gate маршрут вывода страховых продуктов через подразделения компании с юридической проверкой, сверкой с рынком и паспортом продукта.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Маршрут нового продукта — стили */
+/* VOICE: деловой и точный, как заводской маршрутный лист
+   IDEA: маршрутный лист изделия, который обходит подразделения и собирает их печати
+   PICTURE: лента из 11 печатей согласования; цвет и знак показывают статус этапа
+   COLOUR and TYPE: белый, чернила #14161a, глубокий бирюзовый #0b5d63; Libre Caslon Text + Inter
+   LAYOUT: шапка с продуктом и баллом рынка, маршрут во всю ширину, ниже этап и колонка сверки */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0d1416);--ink:light-dark(#14161a,#e4ebea);--mut:light-dark(#5a636d,#94a3a7);
+--teal:light-dark(#0b5d63,#5cbdb6);--tealbg:light-dark(#e6f1f1,#14302f);--rule:light-dark(#d8dde1,#24343a);
+--paper:light-dark(#f5f7f7,#111c1f);--red:light-dark(#a8261d,#f08a80);--redbg:light-dark(#fbeceb,#3a1a18);
+--amb:light-dark(#7d5400,#e2b552);--ambbg:light-dark(#fbf3e2,#33290f);--onteal:light-dark(#fff,#08201f)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Libre Caslon Text",Georgia,serif;font-weight:400;line-height:1.08;text-wrap:balance;margin:0}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(4vw,16px)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.btn{min-height:44px;padding:0 16px;border-radius:6px;border:1px solid var(--rule);background:var(--bg);font-weight:500}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--teal);border-color:var(--teal);color:var(--onteal)}
+.btn.warn{color:var(--red);border-color:var(--red)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.top{border-bottom:1px solid var(--rule)}
+.top .wrap{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding-block:12px}
+.brand{font-family:"Libre Caslon Text",serif;font-size:19px;margin-right:auto}
+#psel{min-height:44px;max-width:340px;padding:0 10px;border:1px solid var(--rule);border-radius:6px;background:var(--bg)}
+.sync{font-size:13px;color:var(--mut)}
+.hero{padding:28px 0 8px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px 40px;align-items:end}
+.hero h1{font-size:clamp(30px,4vw,46px)}
+.status{margin-top:10px;color:var(--mut)}
+.status b{color:var(--ink);font-weight:600}
+.prog{height:6px;background:var(--paper);border-radius:3px;margin-top:14px;max-width:520px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--teal)}
+.score{text-align:right}
+.score .n{font-family:"Libre Caslon Text",serif;font-size:clamp(48px,6vw,68px);line-height:1;color:var(--teal)}
+.score .l{font-size:13px;color:var(--mut)}
+.route{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(104px,1fr);overflow-x:auto;scroll-snap-type:x proximity;padding:26px 0 20px;border-bottom:1px solid var(--rule)}
+.st{position:relative;scroll-snap-align:start;background:none;border:0;padding:0 6px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.st::before{content:"";position:absolute;top:28px;left:-50%;width:100%;height:2px;background:var(--rule);z-index:0}
+.st:first-child::before{display:none}
+.st.ok::before,.st.ok+.st::before{background:var(--teal)}
+.seal{position:relative;z-index:1;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--ink);background:var(--bg);font-weight:600;font-size:17px;transition:transform .2s}
+.st.ok .seal{background:var(--teal);border-color:var(--teal);color:var(--onteal);box-shadow:inset 0 0 0 4px var(--teal),inset 0 0 0 5px var(--onteal)}
+.st.rw .seal{border-color:var(--red);color:var(--red);background:var(--redbg);border-style:double;border-width:4px}
+.st.lock .seal{border:2px dashed var(--rule);color:var(--mut)}
+.st.cur .seal{transform:scale(1.12);box-shadow:0 0 0 5px var(--tealbg)}
+.st.ok.cur .seal{box-shadow:inset 0 0 0 4px var(--teal),inset 0 0 0 5px var(--onteal),0 0 0 5px var(--tealbg)}
+.st .nm{font-size:13px;line-height:1.25;font-weight:500}
+.st .dp{font-size:12px;color:var(--mut);line-height:1.2}
+.st.cur .nm{color:var(--teal)}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:40px;padding:28px 0 64px}
+@media(max-width:900px){.main{grid-template-columns:minmax(0,1fr)}.hero .wrap{grid-template-columns:minmax(0,1fr)}.score{text-align:left}}
+.eyebrow{font-size:14px;color:var(--mut)}
+.shead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:18px}
+.shead h2{font-size:clamp(28px,3vw,36px);margin-top:4px}
+.chip{display:inline-block;font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.c-ok{background:var(--tealbg);color:var(--teal)}.c-rw{background:var(--redbg);color:var(--red)}.c-op{background:var(--paper);color:var(--ink)}.c-lk{background:var(--paper);color:var(--mut)}
+.note{padding:12px 14px;border-radius:6px;background:var(--paper);font-size:15px;margin:0 0 18px}
+.note.w{background:var(--ambbg);color:var(--amb)}.note.r{background:var(--redbg);color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.grid .full{grid-column:1/-1}
+@media(max-width:600px){.grid{grid-template-columns:minmax(0,1fr)}}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:500}
+label.f .req{color:var(--red)}
+input.i,select.i,textarea.i{width:100%;min-height:44px;padding:9px 11px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);font-size:16px}
+textarea.i{min-height:84px;resize:vertical}
+.i:read-only,.i:disabled{background:var(--paper)}
+.blk{margin-top:26px}
+.blk h3{font-size:21px;margin-bottom:10px}
+.checks{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.checks li{border-bottom:1px solid var(--rule)}
+.checks label{display:flex;gap:12px;align-items:center;min-height:48px;padding:6px 2px;cursor:pointer}
+.checks input{width:20px;height:20px;accent-color:var(--teal);flex:none}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--rule);vertical-align:middle}
+th{font-size:13px;color:var(--mut);font-weight:500}
+td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.figs div{background:var(--bg);padding:12px 14px}
+.figs b{display:block;font-family:"Libre Caslon Text",serif;font-size:24px;font-weight:400;white-space:nowrap}
+.figs span{font-size:13px;color:var(--mut)}
+.gates li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 2px;border-bottom:1px solid var(--rule);font-size:15px}
+.gates{list-style:none;padding:0;margin:0;border-top:1px solid var(--rule)}
+.dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700}
+.dot.y{background:var(--teal);color:var(--onteal)}.dot.n{background:var(--red);color:#fff}.dot.u{border:2px dashed var(--rule)}
+.gates .v{font-size:13px;color:var(--mut);white-space:nowrap;text-align:right}
+.ai{border:1px solid var(--rule);border-radius:6px;padding:14px 16px;background:var(--paper)}
+.ai .out{white-space:pre-wrap;font-size:15px;margin-top:10px}
+.ai .meta{font-size:13px;color:var(--mut)}
+.dec{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.miss{font-size:14px;color:var(--amb);margin-top:10px}
+.who{font-size:14px;color:var(--mut);margin-top:10px}
+aside .box{border-top:2px solid var(--ink);padding-top:12px;margin-bottom:30px}
+aside h3{font-size:20px;margin-bottom:12px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) 54px;gap:4px 10px;font-size:14px;margin-bottom:10px}
+.bar .t{height:8px;background:var(--paper);border-radius:4px;grid-column:1/-1;overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--teal)}
+.bar .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;font-size:14px;margin:0}
+.kv dt{color:var(--mut)}.kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.log{list-style:none;padding:0;margin:0;font-size:14px}
+.log li{padding:7px 0;border-bottom:1px solid var(--rule)}
+.log time{display:block;font-size:12px;color:var(--mut)}
+.pass{border:1px solid var(--ink);border-radius:4px;padding:clamp(16px,3vw,28px);margin-top:26px}
+.pass h3{font-size:26px}
+.pass h4{font:600 14px Inter,sans-serif;margin:18px 0 6px;color:var(--teal)}
+.pass p{margin:2px 0;font-size:15px}
+.stamp{display:inline-block;border:3px double var(--teal);color:var(--teal);padding:6px 14px;border-radius:6px;font-weight:700;transform:rotate(-3deg);margin-top:12px}
+.empty{padding:60px 0;max-width:640px}
+.empty h1{font-size:clamp(32px,4vw,46px);margin-bottom:14px}
+.empty .dec{margin-top:22px}
+#copyfall{width:100%;min-height:200px;margin-top:10px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:34px;padding-top:18px;border-top:1px solid var(--rule)}
+.small{font-size:13px;color:var(--mut)}
+@media(prefers-reduced-motion:reduce){.seal{transition:none}}
+.lbl{font-size:20px;margin:26px 0 10px}
+.tpls{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.tpl{display:flex;flex-direction:column;gap:6px;border:1px solid var(--rule);border-radius:6px;padding:16px;cursor:pointer}
+.tpl.on{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal);background:var(--tealbg)}
+.tpl input{position:absolute;opacity:0}
+.tpl:focus-within{outline:2px solid var(--teal);outline-offset:2px}
+.tpl b{font-size:17px}.tpl span{font-size:14px}
+.deps{list-style:none;padding:0;margin:0;border-top:1px solid var(--rule);counter-reset:d}
+.deps li{border-bottom:1px solid var(--rule);counter-increment:d}
+.deps label{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:48px;padding:6px 2px;cursor:pointer;font-size:15px}
+.deps input{width:20px;height:20px;accent-color:var(--teal)}
+.deps b{font-weight:600}
+pre,.scroll{overflow-x:auto}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal}.stack td:empty{display:none}}
+
+/* Подсветка незаполненного и список недостающего (релиз 1.1) */
+label.f.need .i{border-color:var(--amb);box-shadow:0 0 0 1px var(--amb)}
+label.f.need::after{content:"Нужно заполнить";font-size:12px;font-weight:500;color:var(--amb)}
+.checks li.need label{color:var(--amb)}
+#comps.need h3{color:var(--amb)}
+.misslist{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.lnk{min-height:32px;padding:4px 10px;border:1px dashed var(--amb);border-radius:99px;background:var(--ambbg);color:var(--amb);font-size:13px;text-align:left}
+.lnk:hover{border-style:solid}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+.exportbox{border-bottom:1px solid var(--rule);background:var(--paper)}
+.exportbox .wrap{padding-block:16px}
+#exporttext{min-height:180px;font:13px/1.4 ui-monospace,Consolas,monospace}
+@media(max-width:600px){.brand{flex-basis:100%}#psel{flex:1 1 100%;max-width:none}}
+
+</style>
+<script>/* Подписи колонок для таблиц на узком экране */
+new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})
+</script>
+<header class="top"><div class="wrap">
+  <div class="brand">Маршрут нового продукта</div>
+  <select id="psel" aria-label="Продукт"></select>
+  <button class="btn" data-act="new">Новый продукт</button>
+  <span class="tools">
+    <button class="btn" data-act="export" title="Показать резервную копию всех продуктов в формате JSON">Выгрузить</button>
+    <button class="btn" data-act="import" title="Загрузить продукты из файла JSON">Загрузить</button>
+    <button class="btn" data-act="fixtures" title="Добавить 6 условных продуктов для тестирования">Тестовые данные</button>
+    <input type="file" id="importfile" accept=".json,application/json" hidden>
+  </span>
+  <span class="sync" id="sync" role="status">Локальный режим</span>
+</div></header>
+<section id="exportbox" class="exportbox" hidden><div class="wrap">
+  <label class="f" for="exporttext">Резервная копия продуктов (JSON)
+    <textarea class="i" id="exporttext" spellcheck="false"></textarea></label>
+  <p class="small" id="exportmsg" role="status"></p>
+  <div class="dec">
+    <button class="btn pri" data-act="exportcopy">Скопировать</button>
+    <button class="btn" data-act="exportfile">Скачать файл</button>
+    <button class="btn" data-act="importtext" title="Загрузить продукты из текста в поле">Загрузить из поля</button>
+    <button class="btn" data-act="exportclose">Закрыть</button>
+  </div>
+</div></section>
+<div id="app"></div>
+
+<script>
+{
+/* ---- js/util.js ---- */
+/* Общие помощники: экранирование, числа, форматирование ru-RU */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{const n=parseFloat(String(v??'').replace(/[\s ]/g,'').replace(',','.'));return isFinite(n)?n:NaN};
+const fmt=(n,d=0)=>isFinite(n)?n.toLocaleString('ru-RU',{maximumFractionDigits:d}):'—';
+const money=n=>isFinite(n)?fmt(n)+' ₸':'—';
+const dt=t=>t?new Date(t).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+const filled=v=>String(v??'').trim()!=='';
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const G=(t,ok,v)=>({t,ok:ok===null||ok===undefined?null:!!ok,v});
+const has=(...xs)=>xs.every(x=>isFinite(x));
+const compAvg=p=>{const a=(p.comps||[]).map(c=>num(c.p)).filter(x=>x>0);return a.length?a.reduce((x,y)=>x+y,0)/a.length:NaN};
+const compN=p=>(p.comps||[]).filter(c=>filled(c.n)).length;
+const density=n=>n===0?0:n<=2?15:n<=5?10:n<=10?5:2;
+
+
+/* Разбор таблицы, вставленной из Excel или с сайта: «название | значение».
+   Разделители — табуляция, «;» или «|». Берётся последнее число в строке; строки без положительного числа пропускаются. */
+function parseComps(text){const rows=[];
+ for(const ln of String(text||'').split(/\r?\n/)){const c=ln.split(/\t|;|\|/).map(x=>x.trim()).filter(Boolean);if(c.length<2)continue;
+  let v=NaN;for(let i=c.length-1;i>0;i--){v=num(c[i]);if(isFinite(v))break}
+  if(isFinite(v)&&v>0)rows.push({n:c[0],p:String(v)})}
+ return rows}
+
+/* ---- js/templates/endow.js ---- */
+/* Технологическая карта Г: «Накопительное страхование жизни» — 14 этапов, 2 по выбору.
+   Предельные ставки и нормы права указаны без проверки по действующим редакциям: их вносит юридический департамент. */
+const OPT_CUR=['','Тенге','Доллар США'];
+const OPT_PAYF=['','Ежемесячно','Ежеквартально','Ежегодно','Единовременно'];
+const OPT_MORT_E=['','Таблица смертности населения РК (данные БНС)','Таблица БНС с поправкой на застрахованных','Собственная таблица компании'];
+const OPT_REIN_E=['','Не требуется','Перестрахование риска смерти и инвалидности','Квотное перестрахование'];
+const OPT_FATCA_E=['','Не применимо','Процедура FATCA/CRS внедрена','Требует доработки'];
+const OPT_CAB=['','Не начата','В разработке','Протестирована','В промышленной эксплуатации'];
+
+const ENDOW={id:'endow',name:'Накопительное страхование жизни',sub:'Долгосрочный договор с гарантированной ставкой и участием в инвестиционном доходе: выплата при дожитии, защита на случай смерти, выкупные суммы.',
+ ctx:'компания по страхованию жизни (КСЖ) в Казахстане; регулятор — АРРФР; продукт — накопительное страхование жизни с гарантированной технической ставкой и участием в инвестиционном доходе',
+ defaults:{minNBM:'5',minSpread:'1.5',maxGap:'2',minSolv:'1',maxLapse:'15'},
+ comp:{title:'Ожидаемая доходность для клиента в других КСЖ',col:'Доходность, % годовых',hint:'Добавьте не менее трёх КСЖ для одного эталонного клиента'},
+ stages:[
+{id:'idea',name:'Инициация продукта',dept:'Департамент страховых продуктов',ai:'директор департамента страховых продуктов КСЖ',fields:[
+ {k:'name',l:'Название продукта',r:1,full:1},{k:'desc',l:'Концепция и ценность для клиента',t:'area',r:1,full:1},
+ {k:'segment',l:'Целевой сегмент',r:1},{k:'currency',l:'Валюта договора',t:'sel',o:OPT_CUR,r:1},
+ {k:'term',l:'Срок страхования, лет',t:'num',r:1},{k:'payfreq',l:'Периодичность взносов',t:'sel',o:OPT_PAYF,r:1},{k:'owner',l:'Владелец продукта',r:1}],
+ checks:['Продукт соответствует стратегии и лицензии по отрасли «страхование жизни»','Назначен владелец продукта','Определены сегмент, валюта и срок']},
+{id:'market',name:'Анализ рынка',dept:'Маркетинг',ai:'директор по маркетингу КСЖ',fields:[
+ {k:'msize',l:'Рынок накопительного страхования, млрд ₸ премий в год',t:'num',r:1},{k:'growth',l:'Рост рынка, % в год',t:'num',r:1},
+ {k:'demand',l:'Готовы заключить договор, % опрошенных',t:'num',r:1},{k:'uniq',l:'Уникальность условий, 1–5',t:'num',r:1},
+ {k:'refClient',l:'Эталонный клиент для сравнения (возраст, пол, срок, взнос)',r:1,full:1},{k:'usp',l:'УТП',r:1,full:1}],
+ checks:['Собраны предложения не менее 3 КСЖ','Сравнение выполнено для одного эталонного клиента','Проведён опрос или фокус-группа целевого сегмента'],comps:1},
+{id:'act',name:'Актуарные расчёты',dept:'Актуарный отдел',ai:'назначенный актуарий КСЖ',fields:[
+ {k:'mort',l:'Таблица смертности',t:'sel',o:OPT_MORT_E,r:1,full:1},
+ {k:'techRate',l:'Гарантированная (техническая) ставка, % годовых',t:'num',r:1},{k:'clientYield',l:'Ожидаемая доходность для клиента с участием в доходе, % годовых',t:'num',r:1},
+ {k:'share',l:'Доля инвестиционного дохода клиенту, %',t:'num',r:1},{k:'loading',l:'Нагрузка на расходы, % премии',t:'num',r:1},
+ {k:'surrender',l:'Выкупные суммы: методика и удержания',t:'area',r:1,full:1},{k:'riders',l:'Дополнительные покрытия (смерть, инвалидность, критические заболевания)',t:'area',full:1}],
+ checks:['Тарифы и выкупные суммы рассчитаны по утверждённой методике','Проведён анализ чувствительности (ставка, смертность, расторжения)','Подписано заключение актуария']},
+{id:'uw',name:'Андеррайтинг и правила',dept:'Андеррайтинг и методология',ai:'руководитель андеррайтинга и методологии КСЖ',fields:[
+ {k:'ages',l:'Возраст заключения договора',r:1},{k:'sumLimit',l:'Страховая сумма без медобследования, ₸',t:'num',r:1},
+ {k:'medical',l:'Медицинский андеррайтинг: анкета, обследование',t:'area',r:1,full:1},{k:'docs',l:'Пакет документов клиента',t:'area',r:1,full:1}],
+ checks:['Разработаны правила страхования','Утверждены формы договора, заявления и иллюстрации доходности','Определён порядок медицинского андеррайтинга']},
+{id:'inv',name:'Инвестиции и ALM',dept:'Инвестиционный департамент',ai:'директор инвестиционного департамента КСЖ',fields:[
+ {k:'yield',l:'Ожидаемая доходность портфеля, % годовых',t:'num',r:1},{k:'instr',l:'Инструменты размещения',r:1},
+ {k:'durA',l:'Дюрация активов, лет',t:'num',r:1},{k:'durL',l:'Дюрация обязательств, лет',t:'num',r:1},
+ {k:'fx',l:'Валютный риск и его покрытие',t:'area',full:1}],
+ checks:['Инвестиционная декларация допускает выбранные инструменты','Проведён ALM-анализ с учётом досрочных расторжений','Решение одобрено инвестиционным комитетом']},
+{id:'risk',name:'Риск-менеджмент',dept:'Служба риск-менеджмента',ai:'директор по рискам КСЖ',fields:[
+ {k:'riskmap',l:'Карта рисков: расторжения, процентный, валютный, смертность, операционный',t:'area',r:1,full:1},
+ {k:'stress',l:'Результаты стресс-тестов',t:'area',r:1,full:1},
+ {k:'solv',l:'Норматив достаточности маржи платёжеспособности после запуска, коэф.',t:'num',r:1},
+ {k:'lapse',l:'Ожидаемые досрочные расторжения, % договоров в год',t:'num',r:1},{k:'limits',l:'Лимиты по продукту',full:1}],
+ checks:['Риски внесены в реестр рисков','Стресс-тесты выполнены, включая массовые расторжения','Оценено влияние на пруденциальные нормативы']},
+{id:'reins',name:'Перестрахование',dept:'Отдел перестрахования',opt:1,ai:'руководитель отдела перестрахования КСЖ',fields:[
+ {k:'reinNeed',l:'Схема перестрахования',t:'sel',o:OPT_REIN_E,r:1},{k:'reinPartner',l:'Перестраховщик и его рейтинг'},
+ {k:'reinTerms',l:'Условия и стоимость',t:'area',full:1}],
+ checks:['Потребность в перестраховании оценена','Условия согласованы с риск-менеджментом']},
+{id:'fin',name:'Финансовое обоснование',dept:'Финансовый департамент',ai:'финансовый директор КСЖ (МСФО 17)',fields:[
+ {k:'plan',l:'План премий, млн ₸ в год',t:'num',r:1},{k:'contracts',l:'План договоров в год',t:'num',r:1},
+ {k:'comm',l:'Комиссия агентам и банкам, % премии',t:'num',r:1},{k:'adm',l:'Админ. расходы на договор в год, ₸',t:'num',r:1},
+ {k:'nbm',l:'Маржа новых продаж (NBM), %',t:'num',r:1},{k:'csm',l:'CSM по МСФО 17 за 1-й год, млн ₸',t:'num',r:1}],
+ checks:['Построена модель МСФО 17 (VFA или BBA — обосновать выбор)','Бюджет продаж и расходов утверждён','Оценены налоговые последствия для компании и клиента'],econ:1},
+{id:'legal',name:'Юридическая экспертиза',dept:'Юридический департамент',ai:'директор юридического департамента КСЖ (страховое право РК)',fields:[
+ {k:'maxTech',l:'Предельная техническая ставка по действующим требованиям, %',t:'num',r:1},
+ {k:'legalDocs',l:'Проверенные документы (правила, договор, иллюстрация доходности, таблица выкупных сумм)',t:'area',r:1,full:1},
+ {k:'legalRisks',l:'Выявленные риски и меры',t:'area',full:1}],
+ checks:['Правила страхования соответствуют Закону РК «О страховой деятельности»','Негарантированная часть доходности явно обозначена в иллюстрации','Таблица выкупных сумм включена в договор','Соблюдены требования к раскрытию информации и защите прав потребителей финансовых услуг','Согласие на обработку персональных данных включено в формы']},
+{id:'compl',name:'Комплаенс-контроль',dept:'Служба комплаенс',ai:'комплаенс-контролёр КСЖ (ПОД/ФТ)',fields:[
+ {k:'kyc',l:'Процедуры KYC и ПОД/ФТ, проверка источника средств',t:'area',r:1,full:1},{k:'fatca',l:'FATCA / CRS',t:'sel',o:OPT_FATCA_E,r:1},
+ {k:'conflict',l:'Конфликт интересов и требования к рекламе'}],
+ checks:['Продукт оценён на риск ПОД/ФТ (крупные и досрочные взносы)','Внесены изменения в правила внутреннего контроля','Проверены рекламные материалы и иллюстрации доходности']},
+{id:'it',name:'ИТ и операционная подготовка',dept:'ИТ и операционный департамент',ai:'директор по ИТ и операциям КСЖ',fields:[
+ {k:'system',l:'Учётная система',r:1},{k:'cabinet',l:'Личный кабинет и онлайн-расчёт выкупной суммы',t:'sel',o:OPT_CAB,r:1},
+ {k:'invAcc',l:'Учёт и распределение инвестиционного дохода',t:'area',r:1,full:1},{k:'reporting',l:'Отчётность для АРРФР',t:'area',r:1,full:1}],
+ checks:['Личный кабинет и расчёт выкупных сумм протестированы','Настроено начисление гарантированного и дополнительного дохода','Утверждены регламенты сопровождения договоров']},
+{id:'sales',name:'Продажи и обучение',dept:'Департамент продаж',ai:'директор по продажам КСЖ',fields:[
+ {k:'launch',l:'Дата запуска',t:'date',r:1},{k:'budget',l:'Бюджет продвижения, ₸',t:'num'},
+ {k:'channels',l:'Каналы: агенты, банки-партнёры, онлайн',t:'area',r:1,full:1},{k:'training',l:'Обучение и аттестация продавцов',t:'area',r:1,full:1}],
+ checks:['Продавцы обучены и аттестованы','Подготовлены калькулятор и иллюстрации доходности','Утверждена система вознаграждения']},
+{id:'audit',name:'Внутренний аудит',dept:'Служба внутреннего аудита',opt:1,ai:'руководитель службы внутреннего аудита КСЖ',fields:[
+ {k:'auditNote',l:'Заключение и замечания',t:'area',r:1,full:1}],
+ checks:['Процесс разработки продукта проверен','Замечания устранены или имеют план']},
+{id:'final',name:'Правление',dept:'Правление / продуктовый комитет',ai:'председатель правления КСЖ',fields:[
+ {k:'minNBM',l:'Минимальная NBM, %',t:'num',r:1},{k:'minSpread',l:'Минимальный спред портфеля над доходностью клиента, п.п.',t:'num',r:1},
+ {k:'maxGap',l:'Допустимый разрыв дюраций, лет',t:'num',r:1},{k:'minSolv',l:'Минимальный норматив маржи платёжеспособности',t:'num',r:1},
+ {k:'maxLapse',l:'Допустимые расторжения, % в год',t:'num',r:1},{k:'decision',l:'Решение правления',t:'area',full:1}],
+ checks:['Все подразделения подтвердили готовность','Остаточные риски рассмотрены и приняты','Определён порядок уведомления регулятора, если требуется'],gates:1}],
+ calc(p){const f=p.f,cy=num(f.clientYield),avg=compAvg(p),uniq=num(f.uniq),r=cy/avg;
+  const spread=num(f.yield)-cy,gap=Math.abs(num(f.durA)-num(f.durL)),plan=num(f.plan),ctr=num(f.contracts);
+  const parts=[['Рост рынка',isFinite(num(f.growth))?clamp(num(f.growth),0,20):0,20],['Готовность клиентов',isFinite(num(f.demand))?clamp(num(f.demand),0,60)/60*25:0,25],
+   ['Конкурентная плотность',density(compN(p)),15],['Доходность к рынку',isFinite(r)?(r>=1?20:20*Math.max(0,1-(1-r)/.2)):0,20],['Уникальность условий',isFinite(uniq)?clamp(uniq,0,5)/5*20:0,20]];
+  return {cy,avg,r,spread,gap,plan,ctr,avgPrem:plan*1e6/ctr,tech:num(f.techRate),nbm:num(f.nbm),csm:num(f.csm),solv:num(f.solv),lapse:num(f.lapse),comm:num(f.comm),parts,score:parts.reduce((a,x)=>a+x[1],0)}},
+ gates(p,c){const f=p.f,mn=num(f.minNBM)||5,ms=num(f.minSpread)||1.5,mg=num(f.maxGap)||2,mv=num(f.minSolv)||1,ml=num(f.maxLapse)||15,mt=num(f.maxTech),d=num(f.demand);
+  const ok=id=>p.status[id]==='approved';
+  return [G('Балл соответствия рынку не ниже 60',c.score>0?c.score>=60:null,fmt(c.score)+' из 100'),
+   G('Доходность для клиента в рыночном коридоре (95–115% от средней)',has(c.r)?c.r>=.95&&c.r<=1.15:null,isFinite(c.avg)?fmt(c.cy,2)+'% при средней '+fmt(c.avg,2)+'%':'нет данных КСЖ'),
+   G('Спред портфеля над доходностью клиента не ниже '+fmt(ms,1)+' п.п.',has(c.spread)?c.spread>=ms:null,fmt(c.spread,2)+' п.п.'),
+   G('Гарантированная ставка не выше предельной',has(c.tech,mt)?c.tech<=mt:null,isFinite(mt)?fmt(c.tech,2)+'% / '+fmt(mt,2)+'%':'предел не внесён юристом'),
+   G('Маржа новых продаж не ниже '+mn+'%',has(c.nbm)?c.nbm>=mn:null,fmt(c.nbm,1)+'%'),
+   G('CSM положительный (группа договоров не обременительна)',has(c.csm)?c.csm>0:null,isFinite(c.csm)?fmt(c.csm,1)+' млн ₸':'—'),
+   G('Норматив маржи платёжеспособности не ниже '+mv,has(c.solv)?c.solv>=mv:null,fmt(c.solv,2)),
+   G('Разрыв дюраций активов и обязательств не больше '+mg+' лет',has(c.gap)?c.gap<=mg:null,fmt(c.gap,1)+' лет'),
+   G('Досрочные расторжения не выше '+fmt(ml)+'% в год',has(c.lapse)?c.lapse<=ml:null,fmt(c.lapse,1)+'%'),
+   G('Готовность клиентов не ниже 30%',has(d)?d>=30:null,fmt(d)+'%'),
+   G('Юридическая и комплаенс-проверки согласованы',ok('legal')&&ok('compl')?true:(p.status.legal||p.status.compl?false:null),(ok('legal')?'юристы ✓':'юристы —')+' · '+(ok('compl')?'комплаенс ✓':'комплаенс —'))]},
+ figs:c=>[['Премии в год',isFinite(c.plan)?fmt(c.plan)+' млн ₸':'—'],['Средняя премия на договор',money(c.avgPrem)],['NBM',fmt(c.nbm,1)+'%'],['CSM, 1-й год',isFinite(c.csm)?fmt(c.csm,1)+' млн ₸':'—'],['Спред над доходностью клиента',fmt(c.spread,2)+' п.п.'],['Комиссия продавцам',isFinite(c.plan*c.comm)?fmt(c.plan*c.comm/100,1)+' млн ₸':'—']],
+ side:c=>({m:[['Средняя доходность КСЖ',isFinite(c.avg)?fmt(c.avg,2)+'%':'—'],['Наша доходность для клиента',isFinite(c.cy)?fmt(c.cy,2)+'%':'—'],['К рынку',isFinite(c.r)?fmt(c.r*100,1)+'%':'—']],
+  e:[['Спред портфеля',fmt(c.spread,2)+' п.п.'],['Разрыв дюраций',fmt(c.gap,1)+' лет'],['Расторжения',fmt(c.lapse,1)+'% в год'],['Маржа платёжеспособности',fmt(c.solv,2)]]}),
+ head:c=>'доходность для клиента '+fmt(c.cy,2)+'% · NBM '+fmt(c.nbm,1)+'% · спред '+fmt(c.spread,2)+' п.п.',
+ demo(p){p.f.name='Накопительное страхование «Будущее детей» (пример)';Object.assign(p.f,{
+  desc:'Накопления на образование ребёнка за 15 лет: гарантированная ставка, участие в инвестиционном доходе, освобождение от взносов при смерти или инвалидности родителя.',
+  segment:'Родители 28–45 лет',currency:'Тенге',term:'15',payfreq:'Ежемесячно',owner:'С. Нургалиева',
+  msize:'140',growth:'15',demand:'39',uniq:'3',refClient:'Мужчина 35 лет, срок 15 лет, взнос 50 000 ₸ в месяц',usp:'Освобождение от взносов при инвалидности родителя без доплаты',
+  mort:'Таблица БНС с поправкой на застрахованных',techRate:'4',clientYield:'9.4',share:'85',loading:'6',surrender:'Выкупная сумма — 70–95% резерва в зависимости от года договора.',riders:'Смерть и инвалидность I–II группы родителя: освобождение от взносов.',
+  ages:'Родитель 18–55 лет',sumLimit:'30000000',medical:'Анкета; обследование при страховой сумме выше лимита',docs:'Удостоверение личности, свидетельство о рождении ребёнка, анкета',
+  yield:'11.5',instr:'ГЦБ РК, корпоративные облигации, депозиты БВУ',durA:'8',durL:'9.5',fx:'Договор в тенге, валютного риска нет',
+  riskmap:'Расторжения — высокий; процентный — средний; смертность — низкий; операционный — низкий',stress:'Расторжения ×2: NBM 3,1%. Ставки −2 п.п.: норматив 1,25.',solv:'1.35',lapse:'9',
+  reinNeed:'Перестрахование риска смерти и инвалидности',
+  plan:'3600',contracts:'5000',comm:'8',adm:'9000',nbm:'6.2',csm:'150'});
+  p.comps=[{n:'КСЖ А',p:'9.1'},{n:'КСЖ Б',p:'9.6'},{n:'КСЖ В',p:'9.3'}];
+  p.skip=['audit'];return ['idea','market','act','uw','inv','risk','reins','fin']}};
+
+/* ---- js/templates/osns.js ---- */
+/* Технологическая карта В: «ОСНС — обязательное страхование работника от несчастных случаев» — 13 этапов, 1 по выбору.
+   Нормы права, классы риска и предельные значения указаны без проверки по действующим редакциям:
+   их вносит и подтверждает юридический департамент. */
+const OPT_RCLASS=['','Низкий класс профессионального риска','Средний класс профессионального риска','Высокий класс профессионального риска','Очень высокий класс профессионального риска'];
+const OPT_PAA=['','PAA: группа договоров не обременительна','PAA: есть признаки обременительности','Модель общей оценки (BBA)'];
+const OPT_REIN_O=['','Не требуется','Эксцедент убытка на событие (групповой несчастный случай)','Квотное перестрахование'];
+const OPT_INTEG_O=['','Не начата','В разработке','Протестирована','В промышленной эксплуатации'];
+
+const OSNS={id:'osns',name:'ОСНС — страхование работника от несчастных случаев',sub:'Обязательное страхование работника от несчастных случаев при исполнении трудовых обязанностей: тариф от ФОТ и класса риска, урегулирование, убыточность, единая страховая база данных.',
+ ctx:'компания по страхованию жизни (КСЖ) в Казахстане; регулятор — АРРФР; продукт — обязательное страхование работника от несчастных случаев при исполнении трудовых (служебных) обязанностей (ОСНС), страхователь — работодатель',
+ defaults:{maxCR:'100',minSolv:'1',maxEventLim:'10'},
+ comp:{title:'Тарифы других страховщиков для эталонного работодателя',col:'Тариф, % от ФОТ',hint:'Добавьте не менее трёх страховщиков для одного эталонного работодателя'},
+ stages:[
+{id:'idea',name:'Инициация продукта',dept:'Департамент страховых продуктов',ai:'директор департамента страховых продуктов КСЖ',fields:[
+ {k:'name',l:'Название продукта',r:1,full:1},{k:'desc',l:'Концепция и ценность для работодателя',t:'area',r:1,full:1},
+ {k:'segment',l:'Целевые отрасли и классы риска',r:1},{k:'channel',l:'Основной канал продаж',r:1},{k:'owner',l:'Владелец продукта',r:1}],
+ checks:['Лицензия позволяет заниматься ОСНС','Назначен владелец продукта','Определены целевые отрасли и классы профессионального риска']},
+{id:'market',name:'Анализ рынка',dept:'Маркетинг',ai:'директор по маркетингу КСЖ',fields:[
+ {k:'msize',l:'Рынок ОСНС, млрд ₸ премий в год',t:'num',r:1},{k:'growth',l:'Рост рынка, % в год',t:'num',r:1},
+ {k:'demand',l:'Готовы заключить договор, % опрошенных работодателей',t:'num',r:1},{k:'uniq',l:'Уникальность условий и сервиса, 1–5',t:'num',r:1},
+ {k:'refClient',l:'Эталонный работодатель для сравнения (ОКЭД, численность, ФОТ, класс риска)',r:1,full:1},{k:'usp',l:'УТП',r:1,full:1}],
+ checks:['Собраны тарифы не менее 3 страховщиков','Сравнение выполнено для одного эталонного работодателя','Изучены сроки и качество урегулирования у конкурентов'],comps:1},
+{id:'act',name:'Актуарные расчёты',dept:'Актуарный отдел',ai:'назначенный актуарий КСЖ',fields:[
+ {k:'rclass',l:'Класс профессионального риска эталонного работодателя',t:'sel',o:OPT_RCLASS,r:1,full:1},
+ {k:'tariff',l:'Наш тариф для эталонного работодателя, % от ФОТ',t:'num',r:1},{k:'freq',l:'Частота несчастных случаев на 1000 работников в год',t:'num'},
+ {k:'lr',l:'Ожидаемый коэффициент убыточности, %',t:'num',r:1},{k:'reserve',l:'Методика резервов: РНП, РЗНУ, РПНУ',t:'area',r:1,full:1}],
+ checks:['Тарифы рассчитаны по статистике травматизма и утверждённой методике','Проведён анализ чувствительности (частота, тяжесть, рост ФОТ)','Подписано заключение актуария']},
+{id:'uw',name:'Андеррайтинг и правила',dept:'Андеррайтинг и методология',ai:'руководитель андеррайтинга КСЖ',fields:[
+ {k:'docs',l:'Документы работодателя (список работников, ФОТ, акты о несчастных случаях за 5 лет)',t:'area',r:1,full:1},
+ {k:'limits',l:'Лимиты андеррайтинга (численность, класс риска, история травматизма)',t:'area',r:1,full:1},
+ {k:'inspect',l:'Предстраховой осмотр'},{k:'discounts',l:'Скидки и надбавки за состояние охраны труда'}],
+ checks:['Разработаны правила андеррайтинга работодателей','Определён порядок оценки охраны труда','Утверждены формы договора и заявления']},
+{id:'claims',name:'Урегулирование убытков',dept:'Департамент урегулирования',ai:'директор департамента урегулирования убытков КСЖ',fields:[
+ {k:'claimDays',l:'Наш срок выплаты после получения документов, дней',t:'num',r:1},{k:'claimStaff',l:'Ответственные урегулировщики'},
+ {k:'claimProc',l:'Порядок урегулирования: уведомление, акт о несчастном случае, заключение медико-социальной экспертизы',t:'area',r:1,full:1},
+ {k:'annuityPay',l:'Выплаты при утрате трудоспособности: единовременно и (или) периодически',t:'area',r:1,full:1}],
+ checks:['Утверждён регламент урегулирования','Определён порядок взаимодействия с работодателем и медико-социальной экспертизой','Настроен контроль сроков выплат']},
+{id:'risk',name:'Риск-менеджмент',dept:'Служба риск-менеджмента',ai:'директор по рискам КСЖ',fields:[
+ {k:'riskmap',l:'Карта рисков: групповой несчастный случай, концентрация, рост тяжести, резервный риск',t:'area',r:1,full:1},
+ {k:'stress',l:'Результаты стресс-тестов',t:'area',r:1,full:1},
+ {k:'solv',l:'Норматив достаточности маржи платёжеспособности после запуска, коэф.',t:'num',r:1},
+ {k:'maxEvent',l:'Максимальный убыток от одного события, % собственного капитала',t:'num',r:1},{k:'rlimits',l:'Лимиты на одного работодателя',full:1}],
+ checks:['Риски внесены в реестр рисков','Стресс-тесты выполнены','Оценено влияние на пруденциальные нормативы']},
+{id:'reins',name:'Перестрахование',dept:'Отдел перестрахования',opt:1,ai:'руководитель отдела перестрахования КСЖ',fields:[
+ {k:'reinNeed',l:'Схема перестрахования',t:'sel',o:OPT_REIN_O,r:1},{k:'reinPartner',l:'Перестраховщик и его рейтинг'},
+ {k:'reinTerms',l:'Условия и стоимость',t:'area',full:1}],
+ checks:['Потребность в перестраховании оценена','Условия согласованы с риск-менеджментом']},
+{id:'fin',name:'Финансовое обоснование',dept:'Финансовый департамент',ai:'финансовый директор КСЖ (МСФО 17)',fields:[
+ {k:'plan',l:'План премий, млн ₸ в год',t:'num',r:1},{k:'contracts',l:'План договоров в год',t:'num',r:1},
+ {k:'comm',l:'Комиссия посредникам, % премии',t:'num',r:1},{k:'er',l:'Административные расходы, % премии',t:'num',r:1},
+ {k:'paa',l:'Оценка по МСФО 17',t:'sel',o:OPT_PAA,r:1,full:1}],
+ checks:['Построена модель МСФО 17 (PAA) и проверена обременительность','Бюджет продаж и расходов утверждён','Учтены отчисления в систему гарантирования страховых выплат'],econ:1},
+{id:'legal',name:'Юридическая экспертиза',dept:'Юридический департамент',ai:'директор юридического департамента КСЖ (обязательное страхование и трудовое право РК)',fields:[
+ {k:'maxTariff',l:'Предельный тариф для класса риска по действующим требованиям, % ФОТ',t:'num',r:1},
+ {k:'maxClaimDays',l:'Предельный срок выплаты по действующим требованиям, дней',t:'num',r:1},
+ {k:'legalDocs',l:'Проверенные документы (правила, договор, заявление, формы уведомлений)',t:'area',r:1,full:1},
+ {k:'legalRisks',l:'Выявленные риски и меры',t:'area',full:1}],
+ checks:['Правила и договор соответствуют закону РК об обязательном страховании работника от несчастных случаев','Учтены требования Трудового кодекса РК о расследовании несчастных случаев','Соблюдены нормативные акты АРРФР','Проверено участие в системе гарантирования страховых выплат','Согласие на обработку персональных данных работников включено в формы']},
+{id:'compl',name:'Комплаенс-контроль',dept:'Служба комплаенс',ai:'комплаенс-контролёр КСЖ (ПОД/ФТ)',fields:[
+ {k:'kyc',l:'KYC работодателя и бенефициаров, ПОД/ФТ',t:'area',r:1,full:1},{k:'conflict',l:'Конфликт интересов и вознаграждение посредников',full:1}],
+ checks:['Продукт оценён на риск ПОД/ФТ','Проверены условия вознаграждения брокеров и агентов','Проверены рекламные материалы']},
+{id:'it',name:'ИТ и операционная подготовка',dept:'ИТ и операционный департамент',ai:'директор по ИТ и операциям КСЖ',fields:[
+ {k:'system',l:'Учётная система',r:1},{k:'esbd',l:'Передача договоров в единую страховую базу данных',t:'sel',o:OPT_INTEG_O,r:1},
+ {k:'notif',l:'Уведомления работодателю: продление, изменение ФОТ и численности',t:'area',r:1,full:1},{k:'reporting',l:'Отчётность для АРРФР',t:'area',r:1,full:1}],
+ checks:['Обмен с единой страховой базой данных протестирован','Настроен расчёт премии от ФОТ и класса риска','Утверждены регламенты сопровождения договоров']},
+{id:'sales',name:'Продажи и обучение',dept:'Департамент корпоративных продаж',ai:'директор по корпоративным продажам КСЖ',fields:[
+ {k:'launch',l:'Дата запуска',t:'date',r:1},{k:'budget',l:'Бюджет продвижения, ₸',t:'num'},
+ {k:'channels',l:'Каналы: корпоративные продажи, брокеры, агенты',t:'area',r:1,full:1},{k:'training',l:'Обучение продавцов и брокеров',t:'area',r:1,full:1}],
+ checks:['Продавцы обучены','Подготовлены калькулятор тарифа и коммерческое предложение','Утверждена система вознаграждения']},
+{id:'final',name:'Правление',dept:'Правление / продуктовый комитет',ai:'председатель правления КСЖ',fields:[
+ {k:'maxCR',l:'Максимальный комбинированный коэффициент, %',t:'num',r:1},{k:'minSolv',l:'Минимальный норматив маржи платёжеспособности',t:'num',r:1},
+ {k:'maxEventLim',l:'Допустимый убыток от одного события, % капитала',t:'num',r:1},
+ {k:'decision',l:'Решение правления',t:'area',full:1}],
+ checks:['Все подразделения подтвердили готовность','Остаточные риски рассмотрены и приняты','Определён порядок уведомления регулятора, если требуется'],gates:1}],
+ calc(p){const f=p.f,tariff=num(f.tariff),avg=compAvg(p),uniq=num(f.uniq),r=tariff/avg;
+  const lr=num(f.lr),er=num(f.er),comm=num(f.comm),cr=lr+er+comm,plan=num(f.plan),ctr=num(f.contracts);
+  const parts=[['Рост рынка',isFinite(num(f.growth))?clamp(num(f.growth),0,20):0,20],['Готовность работодателей',isFinite(num(f.demand))?clamp(num(f.demand),0,60)/60*25:0,25],
+   ['Конкурентная плотность',density(compN(p)),15],['Тариф к рынку',isFinite(r)?(r<=1?20:20*Math.max(0,1-(r-1)/.5)):0,20],['Уникальность условий',isFinite(uniq)?clamp(uniq,0,5)/5*20:0,20]];
+  return {tariff,avg,r,lr,er,comm,cr,plan,ctr,avgPrem:plan*1e6/ctr,claims:plan*lr/100,solv:num(f.solv),maxEvent:num(f.maxEvent),parts,score:parts.reduce((a,x)=>a+x[1],0)}},
+ gates(p,c){const f=p.f,mc=num(f.maxCR)||100,mv=num(f.minSolv)||1,me=num(f.maxEventLim)||10,mt=num(f.maxTariff),cd=num(f.claimDays),md=num(f.maxClaimDays),d=num(f.demand);
+  const ok=id=>p.status[id]==='approved';
+  return [G('Балл соответствия рынку не ниже 60',c.score>0?c.score>=60:null,fmt(c.score)+' из 100'),
+   G('Тариф не выше предельного по требованиям',has(c.tariff,mt)?c.tariff<=mt:null,isFinite(mt)?fmt(c.tariff,2)+'% / '+fmt(mt,2)+'%':'предел не внесён юристом'),
+   G('Тариф в рыночном коридоре (85–115% от среднего)',has(c.r)?c.r>=.85&&c.r<=1.15:null,isFinite(c.avg)?fmt(c.tariff,2)+'% при среднем '+fmt(c.avg,2)+'%':'нет тарифов конкурентов'),
+   G('Комбинированный коэффициент не выше '+fmt(mc)+'%',has(c.cr)?c.cr<=mc:null,fmt(c.cr,1)+'%'),
+   G('Норматив маржи платёжеспособности не ниже '+mv,has(c.solv)?c.solv>=mv:null,fmt(c.solv,2)),
+   G('Убыток от одного события не больше '+fmt(me)+'% капитала',has(c.maxEvent)?c.maxEvent<=me:null,fmt(c.maxEvent,1)+'%'),
+   G('Срок выплаты не дольше предельного',has(cd,md)?cd<=md:null,isFinite(md)?fmt(cd)+' / '+fmt(md)+' дн.':'предел не внесён юристом'),
+   G('Готовность работодателей не ниже 30%',has(d)?d>=30:null,fmt(d)+'%'),
+   G('Обмен с единой страховой базой данных протестирован',filled(f.esbd)?/Протестирована|эксплуатации/.test(f.esbd):null,f.esbd||'—'),
+   G('Юридическая и комплаенс-проверки согласованы',ok('legal')&&ok('compl')?true:(p.status.legal||p.status.compl?false:null),(ok('legal')?'юристы ✓':'юристы —')+' · '+(ok('compl')?'комплаенс ✓':'комплаенс —'))]},
+ figs:c=>[['Премии в год',isFinite(c.plan)?fmt(c.plan)+' млн ₸':'—'],['Средняя премия на договор',money(c.avgPrem)],['Убыточность',fmt(c.lr,1)+'%'],['Комбинированный коэффициент',fmt(c.cr,1)+'%'],['Ожидаемые выплаты в год',isFinite(c.claims)?fmt(c.claims,1)+' млн ₸':'—'],['Комиссия посредникам',isFinite(c.plan*c.comm)?fmt(c.plan*c.comm/100,1)+' млн ₸':'—']],
+ side:c=>({m:[['Средний тариф рынка',isFinite(c.avg)?fmt(c.avg,2)+'% ФОТ':'—'],['Наш тариф',isFinite(c.tariff)?fmt(c.tariff,2)+'% ФОТ':'—'],['К рынку',isFinite(c.r)?fmt(c.r*100,1)+'%':'—']],
+  e:[['Комбинированный коэффициент',fmt(c.cr,1)+'%'],['Убыточность',fmt(c.lr,1)+'%'],['Маржа платёжеспособности',fmt(c.solv,2)],['Убыток от события',fmt(c.maxEvent,1)+'% капитала']]}),
+ head:c=>'тариф '+fmt(c.tariff,2)+'% ФОТ · комбинированный коэффициент '+fmt(c.cr,1)+'% · маржа платёжеспособности '+fmt(c.solv,2),
+ demo(p){p.f.name='ОСНС «Защита на производстве» (пример)';Object.assign(p.f,{
+  desc:'ОСНС для предприятий обрабатывающей промышленности с выплатой в течение 7 дней и консультацией по охране труда.',segment:'Обрабатывающая промышленность, средний класс риска',channel:'Корпоративные продажи и брокеры',owner:'А. Жунусова',
+  msize:'60',growth:'8',demand:'37',uniq:'3',refClient:'Производство мебели, 250 работников, годовой ФОТ 1,2 млрд ₸, средний класс риска',usp:'Выплата за 7 дней и бесплатный аудит охраны труда',
+  rclass:'Средний класс профессионального риска',tariff:'0.31',freq:'2.4',lr:'58',reserve:'РНП — pro rata temporis; РЗНУ — по заявленным убыткам; РПНУ — цепочно-лестничный метод.',
+  docs:'Список работников, справка о годовом ФОТ, акты о несчастных случаях за 5 лет, сведения об ОКЭД',limits:'До 5 000 работников; без ограничений по классу при наличии системы охраны труда',
+  claimDays:'7',claimProc:'Уведомление в течение суток, акт о несчастном случае, заключение медико-социальной экспертизы, выплата в течение 7 дней.',annuityPay:'Единовременная выплата и периодические выплаты при стойкой утрате трудоспособности по правилам компании.',
+  riskmap:'Групповой несчастный случай — высокий; концентрация — средний; рост тяжести — средний; резервный — низкий',stress:'Групповой случай на 20 человек: норматив 1,31. Рост тяжести +30%: комбинированный коэффициент 94%.',solv:'1.4',maxEvent:'7',
+  reinNeed:'Эксцедент убытка на событие (групповой несчастный случай)',
+  plan:'1500',contracts:'900',comm:'10',er:'12',paa:'PAA: группа договоров не обременительна'});
+  p.comps=[{n:'Страховщик А',p:'0.33'},{n:'Страховщик Б',p:'0.30'},{n:'Страховщик В',p:'0.35'}];
+  return ['idea','market','act','uw','claims','risk','reins','fin']}};
+
+/* ---- js/templates/annuity.js ---- */
+/* Технологическая карта Б: «Пенсионный аннуитет (страхование жизни)» — 14 этапов */
+const OPT_SEG=['','Пенсионеры по возрасту','Досрочный аннуитет (накопления выше порога достаточности)','Оба сегмента'];
+const OPT_ATYPE=['','Пожизненный','Пожизненный с гарантированным периодом','Совместный (на двух лиц)'];
+const OPT_MORT=['','Таблица смертности населения РК (данные БНС)','Таблица БНС с поправкой на долголетие аннуитантов','Собственная таблица компании'];
+const OPT_ENPF=['','Не начата','В разработке','Протестирована','В промышленной эксплуатации'];
+const OPT_REIN=['','Не требуется','Перестрахование риска долголетия','Квотное перестрахование'];
+const OPT_FATCA=['','Не применимо','Процедура FATCA/CRS внедрена','Требует доработки'];
+
+const ANNUITY={id:'annuity',name:'Пенсионный аннуитет (страхование жизни)',sub:'Технологическая карта КСЖ: актуарные расчёты, ALM, риск-менеджмент, МСФО 17, юридическая и комплаенс-проверка, интеграция с ЕНПФ.',
+ ctx:'компания по страхованию жизни (КСЖ) в Казахстане; регулятор — АРРФР; продукт — пенсионный аннуитет за счёт пенсионных накоплений ЕНПФ',
+ defaults:{refSum:'1000000',minNBM:'5',minSpread:'1.5',maxGap:'2',minSolv:'1'},
+ comp:{title:'Предложения других КСЖ: выплата на 1 млн ₸',col:'Выплата в месяц, ₸',hint:'Добавьте не менее трёх КСЖ для одного эталонного клиента'},
+ stages:[
+{id:'idea',name:'Инициация продукта',dept:'Департамент страховых продуктов',ai:'директор департамента страховых продуктов КСЖ',fields:[
+ {k:'name',l:'Название продукта',r:1,full:1},{k:'desc',l:'Концепция и ценность для клиента',t:'area',r:1,full:1},
+ {k:'segment',l:'Целевой сегмент',t:'sel',o:OPT_SEG,r:1},{k:'atype',l:'Вид аннуитета',t:'sel',o:OPT_ATYPE,r:1},
+ {k:'source',l:'Источник премии',r:1},{k:'owner',l:'Владелец продукта',r:1}],
+ checks:['Продукт соответствует стратегии и лицензии по отрасли «страхование жизни»','Назначен владелец продукта','Определены целевой сегмент и источник страховой премии']},
+{id:'market',name:'Анализ рынка',dept:'Маркетинг',ai:'директор по маркетингу КСЖ',fields:[
+ {k:'msize',l:'Рынок пенсионных аннуитетов, млрд ₸ премий в год',t:'num',r:1},{k:'growth',l:'Рост рынка, % в год',t:'num',r:1},
+ {k:'demand',l:'Готовы заключить договор, % опрошенных',t:'num',r:1},{k:'uniq',l:'Уникальность условий, 1–5',t:'num',r:1},
+ {k:'refClient',l:'Эталонный клиент для сравнения (возраст, пол, гарантийный период)',r:1,full:1},{k:'usp',l:'УТП',r:1,full:1}],
+ checks:['Собраны предложения не менее 3 КСЖ','Сравнение выполнено для одинакового эталонного клиента','Проведён опрос или фокус-группа целевого сегмента'],comps:1},
+{id:'act',name:'Актуарные расчёты',dept:'Актуарный отдел',ai:'назначенный актуарий КСЖ',fields:[
+ {k:'mort',l:'Таблица смертности',t:'sel',o:OPT_MORT,r:1,full:1},{k:'techRate',l:'Техническая норма доходности, % годовых',t:'num',r:1},
+ {k:'index',l:'Индексация выплат, % в год',t:'num',r:1},{k:'loading',l:'Нагрузка на расходы, % премии',t:'num',r:1},
+ {k:'guar',l:'Гарантированный период, лет',t:'num',r:1},{k:'payout',l:'Выплата в месяц на 1 млн ₸ для эталонного клиента, ₸',t:'num',r:1,full:1},
+ {k:'reserve',l:'Методика страховых резервов',t:'area',r:1,full:1}],
+ checks:['Тарифы рассчитаны по утверждённой актуарной методике','Проведён анализ чувствительности (смертность, ставка, индексация, расходы)','Подписано заключение актуария']},
+{id:'uw',name:'Андеррайтинг и правила',dept:'Андеррайтинг и методология',ai:'руководитель андеррайтинга и методологии КСЖ',fields:[
+ {k:'ages',l:'Возраст заключения договора',r:1},{k:'minprem',l:'Минимальная страховая премия, ₸',t:'num',r:1},
+ {k:'clientDocs',l:'Пакет документов клиента',t:'area',r:1,full:1},
+ {k:'terms',l:'Ключевые условия: порядок и периодичность выплат, наследование в гарантийный период, расторжение',t:'area',r:1,full:1}],
+ checks:['Разработаны правила страхования','Разработаны формы договора, заявления и уведомлений','Определена проверка данных клиента через государственные базы']},
+{id:'inv',name:'Инвестиции и ALM',dept:'Инвестиционный департамент',ai:'директор инвестиционного департамента КСЖ',fields:[
+ {k:'yield',l:'Ожидаемая доходность портфеля, % годовых',t:'num',r:1},{k:'instr',l:'Инструменты размещения',r:1},
+ {k:'durA',l:'Дюрация активов, лет',t:'num',r:1},{k:'durL',l:'Дюрация обязательств, лет',t:'num',r:1},
+ {k:'alm',l:'Выводы ALM-анализа',t:'area',full:1}],
+ checks:['Инвестиционная декларация допускает выбранные инструменты','Проведён ALM-анализ денежных потоков','Решение одобрено инвестиционным комитетом']},
+{id:'risk',name:'Риск-менеджмент',dept:'Служба риск-менеджмента',ai:'директор по рискам КСЖ',fields:[
+ {k:'riskmap',l:'Карта рисков: долголетие, процентный, инфляционный, ликвидности, операционный',t:'area',r:1,full:1},
+ {k:'stress',l:'Результаты стресс-тестов',t:'area',r:1,full:1},
+ {k:'solv',l:'Норматив достаточности маржи платёжеспособности после запуска, коэф.',t:'num',r:1},{k:'limits',l:'Лимиты по продукту'}],
+ checks:['Риски внесены в реестр рисков','Стресс-тесты выполнены','Оценено влияние на пруденциальные нормативы']},
+{id:'reins',name:'Перестрахование',dept:'Отдел перестрахования',opt:1,ai:'руководитель отдела перестрахования КСЖ',fields:[
+ {k:'reinNeed',l:'Схема перестрахования',t:'sel',o:OPT_REIN,r:1},{k:'reinPartner',l:'Перестраховщик и его рейтинг'},
+ {k:'reinTerms',l:'Условия и стоимость',t:'area',full:1}],
+ checks:['Потребность в перестраховании оценена','Условия согласованы с риск-менеджментом']},
+{id:'fin',name:'Финансовое обоснование',dept:'Финансовый департамент',ai:'финансовый директор КСЖ (МСФО 17)',fields:[
+ {k:'plan',l:'План премий, млн ₸ в год',t:'num',r:1},{k:'contracts',l:'План договоров в год',t:'num',r:1},
+ {k:'comm',l:'Комиссия агентам, % премии',t:'num',r:1},{k:'adm',l:'Админ. расходы на договор в год, ₸',t:'num',r:1},
+ {k:'nbm',l:'Маржа новых продаж (NBM), %',t:'num',r:1},{k:'csm',l:'CSM по МСФО 17 за 1-й год, млн ₸',t:'num',r:1}],
+ checks:['Построена модель МСФО 17 (группы договоров, CSM, обременительность)','Бюджет продаж и расходов утверждён','Оценены налоговые последствия для компании и получателя выплат'],econ:1},
+{id:'legal',name:'Юридическая экспертиза',dept:'Юридический департамент',ai:'директор юридического департамента КСЖ (страховое и пенсионное право РК)',fields:[
+ {k:'minIndex',l:'Минимальная индексация выплат по действующим требованиям, %',t:'num',r:1},
+ {k:'legalDocs',l:'Проверенные документы (правила, договор, формы, договор с ЕНПФ)',t:'area',r:1,full:1},
+ {k:'legalRisks',l:'Выявленные риски и меры',t:'area',full:1}],
+ checks:['Правила страхования соответствуют Закону РК «О страховой деятельности»','Условия соответствуют Социальному кодексу РК и нормативным актам АРРФР о пенсионном аннуитете','Проверен порядок перевода пенсионных накоплений из ЕНПФ','Соблюдены требования к раскрытию информации и защите прав потребителей финансовых услуг','Согласие на сбор и обработку персональных данных включено в формы']},
+{id:'compl',name:'Комплаенс-контроль',dept:'Служба комплаенс',ai:'комплаенс-контролёр КСЖ (ПОД/ФТ)',fields:[
+ {k:'kyc',l:'Процедуры KYC и ПОД/ФТ',t:'area',r:1,full:1},{k:'fatca',l:'FATCA / CRS',t:'sel',o:OPT_FATCA,r:1},
+ {k:'conflict',l:'Конфликт интересов и требования к рекламе'}],
+ checks:['Продукт оценён на риск ПОД/ФТ','Внесены изменения в правила внутреннего контроля','Проверены рекламные материалы и раскрытие']},
+{id:'it',name:'ИТ и операционная подготовка',dept:'ИТ и операционный департамент',ai:'директор по ИТ и операциям КСЖ',fields:[
+ {k:'system',l:'Учётная система',r:1},{k:'enpf',l:'Интеграция с ЕНПФ',t:'sel',o:OPT_ENPF,r:1},
+ {k:'payProc',l:'Процесс ежемесячных выплат и индексации',t:'area',r:1,full:1},{k:'reporting',l:'Отчётность для АРРФР и фонда гарантирования',t:'area',r:1,full:1}],
+ checks:['Интеграция с ЕНПФ протестирована','Настроены расчёт выплат, индексация и удержания','Утверждены регламенты сопровождения договоров']},
+{id:'sales',name:'Продажи и обучение',dept:'Департамент продаж',ai:'директор по продажам КСЖ',fields:[
+ {k:'launch',l:'Дата запуска',t:'date',r:1},{k:'budget',l:'Бюджет продвижения, ₸',t:'num'},
+ {k:'channels',l:'Каналы: агентская сеть, филиалы, онлайн',t:'area',r:1,full:1},{k:'training',l:'Обучение и аттестация агентов',t:'area',r:1,full:1}],
+ checks:['Агенты обучены и аттестованы','Подготовлены калькулятор выплат и материалы раскрытия','Утверждена система вознаграждения']},
+{id:'audit',name:'Внутренний аудит',dept:'Служба внутреннего аудита',opt:1,ai:'руководитель службы внутреннего аудита КСЖ',fields:[
+ {k:'auditNote',l:'Заключение и замечания',t:'area',r:1,full:1}],
+ checks:['Процесс разработки продукта проверен','Замечания устранены или имеют план']},
+{id:'final',name:'Правление',dept:'Правление / продуктовый комитет',ai:'председатель правления КСЖ',fields:[
+ {k:'minNBM',l:'Минимальная NBM, %',t:'num',r:1},{k:'minSpread',l:'Минимальный спред доходности, п.п.',t:'num',r:1},
+ {k:'maxGap',l:'Допустимый разрыв дюраций, лет',t:'num',r:1},{k:'minSolv',l:'Минимальный норматив маржи платёжеспособности',t:'num',r:1},
+ {k:'decision',l:'Решение правления',t:'area',full:1}],
+ checks:['Все подразделения подтвердили готовность','Остаточные риски рассмотрены и приняты','Определён порядок уведомления регулятора, если требуется'],gates:1}],
+ calc(p){const f=p.f,payout=num(f.payout),avg=compAvg(p),uniq=num(f.uniq),r=payout/avg;
+  const spread=num(f.yield)-num(f.techRate),gap=Math.abs(num(f.durA)-num(f.durL));
+  const plan=num(f.plan),ctr=num(f.contracts),avgPrem=plan*1e6/ctr;
+  const parts=[['Рост рынка',isFinite(num(f.growth))?clamp(num(f.growth),0,20):0,20],['Готовность клиентов',isFinite(num(f.demand))?clamp(num(f.demand),0,60)/60*25:0,25],
+   ['Конкурентная плотность',density(compN(p)),15],['Размер выплаты к рынку',isFinite(r)?(r>=1?20:20*Math.max(0,1-(1-r)/.2)):0,20],['Уникальность условий',isFinite(uniq)?clamp(uniq,0,5)/5*20:0,20]];
+  return {payout,avg,r,spread,gap,plan,ctr,avgPrem,nbm:num(f.nbm),csm:num(f.csm),solv:num(f.solv),comm:num(f.comm),parts,score:parts.reduce((a,x)=>a+x[1],0)}},
+ gates(p,c){const f=p.f,mn=num(f.minNBM)||5,ms=num(f.minSpread)||1.5,mg=num(f.maxGap)||2,mv=num(f.minSolv)||1,ix=num(f.index),mi=num(f.minIndex),d=num(f.demand);
+  const ok=id=>p.status[id]==='approved';
+  return [G('Балл соответствия рынку не ниже 60',c.score>0?c.score>=60:null,fmt(c.score)+' из 100'),
+   G('Выплата на 1 млн ₸ в рыночном коридоре (95–115% от средней)',has(c.payout,c.avg)?c.r>=.95&&c.r<=1.15:null,isFinite(c.avg)?money(c.payout)+' при средней '+money(c.avg):'нет данных КСЖ'),
+   G('Спред доходности портфеля над техставкой не ниже '+fmt(ms,1)+' п.п.',has(c.spread)?c.spread>=ms:null,fmt(c.spread,2)+' п.п.'),
+   G('Индексация выплат не ниже требуемой',has(ix,mi)?ix>=mi:null,fmt(ix,1)+'% / '+(isFinite(mi)?fmt(mi,1)+'%':'не задано')),
+   G('Маржа новых продаж не ниже '+mn+'%',has(c.nbm)?c.nbm>=mn:null,fmt(c.nbm,1)+'%'),
+   G('CSM положительный (группа договоров не обременительна)',has(c.csm)?c.csm>0:null,isFinite(c.csm)?fmt(c.csm,1)+' млн ₸':'—'),
+   G('Норматив маржи платёжеспособности не ниже '+mv,has(c.solv)?c.solv>=mv:null,fmt(c.solv,2)),
+   G('Разрыв дюраций активов и обязательств не больше '+mg+' лет',has(c.gap)?c.gap<=mg:null,fmt(c.gap,1)+' лет'),
+   G('Готовность клиентов не ниже 30%',has(d)?d>=30:null,fmt(d)+'%'),
+   G('Интеграция с ЕНПФ протестирована',filled(f.enpf)?/Протестирована|эксплуатации/.test(f.enpf):null,f.enpf||'—'),
+   G('Юридическая и комплаенс-проверки согласованы',ok('legal')&&ok('compl')?true:(p.status.legal||p.status.compl?false:null),(ok('legal')?'юристы ✓':'юристы —')+' · '+(ok('compl')?'комплаенс ✓':'комплаенс —'))]},
+ figs:c=>[['Премии в год',isFinite(c.plan)?fmt(c.plan)+' млн ₸':'—'],['Средняя премия на договор',money(c.avgPrem)],['NBM',fmt(c.nbm,1)+'%'],['CSM, 1-й год',isFinite(c.csm)?fmt(c.csm,1)+' млн ₸':'—'],['Спред доходности',fmt(c.spread,2)+' п.п.'],['Комиссия агентам',isFinite(c.plan*c.comm)?fmt(c.plan*c.comm/100,1)+' млн ₸':'—']],
+ side:c=>({m:[['Средняя выплата КСЖ на 1 млн ₸',money(c.avg)],['Наша выплата на 1 млн ₸',money(c.payout)],['К рынку',isFinite(c.r)?fmt(c.r*100,1)+'%':'—']],
+  e:[['Спред доходности',fmt(c.spread,2)+' п.п.'],['Разрыв дюраций',fmt(c.gap,1)+' лет'],['NBM',fmt(c.nbm,1)+'%'],['Маржа платёжеспособности',fmt(c.solv,2)]]}),
+ head:c=>'выплата '+money(c.payout)+' на 1 млн ₸ · NBM '+fmt(c.nbm,1)+'% · спред '+fmt(c.spread,2)+' п.п.',
+ demo(p){p.f.name='Пенсионный аннуитет «Стабильный доход» (пример)';Object.assign(p.f,{
+  desc:'Пожизненные ежемесячные выплаты за счёт пенсионных накоплений с ежегодной индексацией и гарантированным периодом 10 лет: при смерти в гарантированный период выплаты получают наследники.',
+  segment:'Оба сегмента',atype:'Пожизненный с гарантированным периодом',source:'Пенсионные накопления ЕНПФ',owner:'Д. Ахметова',
+  msize:'95',growth:'12',demand:'38',uniq:'3',refClient:'Мужчина 63 года, гарантированный период 10 лет, премия 1 млн ₸',usp:'Гарантированный период 10 лет и онлайн-оформление за один визит',
+  mort:'Таблица БНС с поправкой на долголетие аннуитантов',techRate:'9',index:'5',loading:'4',guar:'10',payout:'6950',reserve:'Резерв по договорам аннуитета — по утверждённой методике КСЖ; оценка по МСФО 17 (BBA).',
+  ages:'От возраста, дающего право на аннуитет, до 75 лет',minprem:'1000000',clientDocs:'Удостоверение личности, заявление, справка ЕНПФ о накоплениях, реквизиты счёта',terms:'Ежемесячные выплаты, индексация раз в год, наследование выплат в гарантированный период, расторжение — по основаниям правил',
+  yield:'12',instr:'ГЦБ РК, облигации квазигосударственных компаний, депозиты БВУ',durA:'7.5',durL:'9',alm:'Разрыв частично закрывается долгосрочными ГЦБ.',
+  riskmap:'Долголетие — высокий; процентный — средний; инфляционный — средний; ликвидности — низкий; операционный — низкий',stress:'Снижение смертности на 10%: CSM −18%. Падение ставок на 2 п.п.: норматив маржи 1,21.',solv:'1.45',limits:'Объём продаж до 6 млрд ₸ в год',
+  reinNeed:'Не требуется',
+  plan:'4200',contracts:'600',comm:'3',adm:'18000',nbm:'6.5',csm:'210'});
+  p.comps=[{n:'КСЖ А',p:'6700'},{n:'КСЖ Б',p:'7200'},{n:'КСЖ В',p:'6900'}];
+  p.skip=['audit'];return ['idea','market','act','uw','inv','risk','reins','fin']}};
+
+/* ---- js/templates/index.js ---- */
+/* Реестр технологических карт. Порядок задаёт порядок на экране «Новый продукт». */
+const TPL={annuity:ANNUITY,endow:ENDOW,osns:OSNS};
+
+/* ---- js/state.js ---- */
+/* Состояние, правила маршрута и хранение */
+/* ================= СОСТОЯНИЕ ================= */
+const CID=Math.random().toString(36).slice(2,10),LS='product-route-v1';
+let db=null,user=null,sample=null,uid=null;
+let products={},cur=null,si=0,timers={},busy={},again={},view='main',draft=null;
+const P=()=>products[cur];
+const T=p=>TPL[p&&p.tpl]||ANNUITY;
+/* Продукты по удалённым картам (например, «Производство») остаются в хранилище, но не показываются */
+const known=p=>!!(p&&TPL[p.tpl]);
+const hiddenCount=()=>Object.values(products).filter(p=>!known(p)).length;
+function firstId(){return Object.keys(products).filter(id=>known(products[id])).sort((a,b)=>(products[b].created||0)-(products[a].created||0))[0]||null}
+const S=p=>T(p).stages.filter(s=>!(p.skip||[]).includes(s.id));
+function blank(tpl,skip,name){const t=TPL[tpl],id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+ return {id,tpl,skip:skip||[],created:Date.now(),f:Object.assign({name:name||'Новый продукт'},t.defaults),checks:{},status:{},by:{},at:{},comment:{},comps:[],ai:{},log:[]}}
+function st(p,i){const L=S(p),s=p.status[L[i].id];if(s==='approved')return'ok';if(i>0&&p.status[L[i-1].id]!=='approved')return'lock';return s==='rework'?'rw':'op'}
+function firstOpen(p){const L=S(p);for(let i=0;i<L.length;i++)if(p.status[L[i].id]!=='approved')return i;return L.length-1}
+const calc=p=>T(p).calc(p);
+const gates=p=>T(p).gates(p,calc(p));
+/* Чего не хватает для согласования этапа i.
+   Каждый пункт: { t: текст, ref: id элемента на странице } или { t, go: номер этапа }. */
+function missing(p,i){const L=S(p),s=L[i],m=[];for(const x of s.fields)if(x.r&&!filled(p.f[x.k]))m.push({t:x.l,ref:'f_'+x.k});
+ const ch=p.checks[s.id]||[];s.checks.forEach((c,j)=>{if(!ch[j])m.push({t:'☐ '+c,ref:'chk_'+j})});
+ if(s.comps&&(p.comps||[]).filter(c=>filled(c.n)&&num(c.p)>0).length<3)m.push({t:'Не менее 3 конкурентов с данными',ref:'comps'});
+ if(s.gates)L.slice(0,-1).forEach((x,j)=>{if(p.status[x.id]!=='approved')m.push({t:'Не согласован этап «'+x.name+'»',go:j})});
+ return m}
+
+/* Отзыв согласования этапа i: этап и все последующие возвращаются в работу. */
+function revokeFrom(p,i){const L=S(p);p.status[L[i].id]='draft';
+ for(let j=i+1;j<L.length;j++){const id=L[j].id;if(p.status[id]==='approved')p.status[id]='draft'}}
+
+/* ================= ХРАНЕНИЕ ================= */
+function lsSave(){try{localStorage.setItem(LS,JSON.stringify(products))}catch(e){}}
+function lsLoad(){try{const v=JSON.parse(localStorage.getItem(LS)||'{}');if(v&&typeof v==='object')products=v}catch(e){}}
+function setSync(t){$('#sync').textContent=t}
+function touch(p){p._c=CID;p._t=Date.now();clearTimeout(timers[p.id]);timers[p.id]=setTimeout(()=>{timers[p.id]=null;persist(p.id)},600)}
+async function persist(id){if(!db){lsSave();return}
+ if(busy[id]){again[id]=1;return}busy[id]=1;setSync('Сохранение…');
+ try{const p=products[id];if(p)await db.doc('products/'+id).set(JSON.parse(JSON.stringify(p)));setSync('Сохранено · общий доступ')}
+ catch(e){setSync(e&&e.code==='invalid_argument'?'Только просмотр: нет прав на изменение':'Ошибка сохранения')}
+ busy[id]=0;if(again[id]){again[id]=0;persist(id)}}
+function addLog(p,x){p.log=p.log||[];p.log.unshift({t:Date.now(),u:uid||'',x});if(p.log.length>150)p.log.length=150}
+async function fillNames(){if(!user)return;const els=[...document.querySelectorAll('[data-uid]')];const ids=[...new Set(els.map(e=>e.dataset.uid).filter(Boolean))];if(!ids.length)return;
+ try{const ps=await user.profiles(ids);for(const e of els){const n=ps?.[e.dataset.uid]?.name;if(n)e.textContent=n}}catch(e){}}
+
+
+/* ---- js/fixtures.js ---- */
+/* Тестовые данные: шесть условных продуктов, которые проходят весь маршрут в разных состояниях.
+   Все компании, люди, цифры и номера документов выдуманы и служат только для проверки приложения.
+
+   Сценарии:
+   T1  Аннуитет «Надёжная опора»       — все 14 этапов согласованы, все контрольные точки в норме, «Готов к запуску»
+   T2  Аннуитет «Гарант-Плюс»          — дошёл до правления, сверка выявила 6 отклонений: нужен комментарий о принятии риска
+   T3  Аннуитет «Досрочный старт»      — андеррайтинг возвращён на доработку, внутренний аудит исключён
+   T4  ОСНС «Безопасный труд»         — все 13 этапов согласованы, все контрольные точки в норме, «Готов к запуску»
+   T5  ОСНС «Горнодобыча»             — юридическая экспертиза в работе: тариф выше предела и рынка, комбинированный коэффициент 112%,
+                                         убыток от события 14% капитала, срок выплаты дольше предельного
+   T6  Накопительное «Капитал 10»     — 13 этапов согласованы (аудит исключён), «Готов к запуску» */
+
+const FX_DAY=864e5;
+
+const FIXTURES=[
+/* ===================== T1. Аннуитет: всё согласовано ===================== */
+{id:'test-t1-annuity-ready',tpl:'annuity',skip:[],
+ name:'ТЕСТ · Пенсионный аннуитет «Надёжная опора»',
+ approved:['idea','market','act','uw','inv','risk','reins','fin','legal','compl','it','sales','audit','final'],
+ comments:{final:'Запуск одобрен. Первые продажи — через агентскую сеть и два пилотных филиала.'},
+ f:{
+  desc:'Пожизненные ежемесячные выплаты за счёт пенсионных накоплений с ежегодной индексацией 6% и гарантированным периодом 15 лет.',
+  segment:'Пенсионеры по возрасту',atype:'Пожизненный с гарантированным периодом',source:'Пенсионные накопления ЕНПФ',owner:'М. Касымова',
+  msize:'110',growth:'14',demand:'45',uniq:'4',refClient:'Женщина 61 год, гарантированный период 15 лет, премия 1 млн ₸',usp:'Индексация 6% и гарантированный период 15 лет при выплате выше средней по рынку',
+  mort:'Таблица БНС с поправкой на долголетие аннуитантов',techRate:'10',index:'6',loading:'3.5',guar:'15',payout:'7150',
+  reserve:'Резерв аннуитетных выплат по утверждённой методике; МСФО 17 — модель общей оценки (BBA), ставка дисконтирования по кривой ГЦБ.',
+  ages:'От пенсионного возраста до 80 лет',minprem:'800000',clientDocs:'Удостоверение личности, заявление, выписка ЕНПФ о накоплениях, реквизиты банковского счёта',
+  terms:'Выплаты ежемесячно до 10 числа, индексация 1 января, наследование выплат в гарантированный период, расторжение не допускается после начала выплат',
+  yield:'12.5',instr:'ГЦБ РК 10–15 лет, облигации квазигосударственного сектора, депозиты БВУ',durA:'8.5',durL:'9.5',alm:'Разрыв дюраций 1 год закрыт покупкой длинных ГЦБ; ликвидность на 12 месяцев выплат.',
+  riskmap:'Долголетие — высокий; процентный — средний; инфляционный — средний; ликвидности — низкий; операционный — низкий',
+  stress:'Смертность −15%: CSM −22%, норматив 1,38. Ставки −2 п.п.: норматив 1,29. Инфляция +3 п.п.: норматив 1,41.',solv:'1.6',limits:'Премии до 8 млрд ₸ в год; концентрация на одного эмитента не более 10%',
+  reinNeed:'Перестрахование риска долголетия',reinPartner:'Перестраховщик «Условный Ре», рейтинг A (условно)',reinTerms:'Квота 20% по риску долголетия свыше 85 лет, стоимость 0,8% премии',
+  plan:'5500',contracts:'700',comm:'2.5',adm:'15000',nbm:'7',csm:'260',
+  minIndex:'5',legalDocs:'Правила страхования ред. 1, договор, заявление, уведомление о выплатах, соглашение с ЕНПФ о переводе накоплений',legalRisks:'Существенных рисков не выявлено; формы раскрытия обновить при изменении требований регулятора.',
+  kyc:'Идентификация по удостоверению и данным ЕНПФ, проверка по спискам ПОД/ФТ при заключении и ежегодно',fatca:'Процедура FATCA/CRS внедрена',conflict:'Реклама согласована, конфликт интересов агентов не выявлен',
+  system:'Учётная система «Полис-Учёт» (условно)',enpf:'Протестирована',payProc:'Ежемесячный пакет выплат, индексация автоматически 1 января, удержание ИПН',reporting:'Отчёты для АРРФР и фонда гарантирования настроены, тестовая выгрузка принята',
+  launch:'2027-02-01',budget:'45000000',channels:'Агентская сеть (120 агентов), 8 филиалов, онлайн-заявка с визитом в офис',training:'Курс 16 часов, тестирование, аттестация 100% агентов',
+  auditNote:'Процесс разработки соответствует внутренним политикам. Два замечания по оформлению протоколов устранены.',
+  minNBM:'5',minSpread:'1.5',maxGap:'2',minSolv:'1',decision:'Одобрить запуск с 01.02.2027.',
+  compSrc:'Калькуляторы на сайтах компаний, эталонный клиент — женщина 61 год, 15 лет гарантии; данные условные, ноябрь 2026'},
+ resp:{idea:'М. Касымова',market:'А. Нурланова',act:'Т. Бекенов, назначенный актуарий',uw:'Г. Садыкова',inv:'Е. Жумабаев',risk:'Р. Ким',reins:'О. Петрова',fin:'Ж. Оспанова',legal:'Н. Айтжанов',compl:'С. Ли',it:'Д. Мусин',sales:'К. Абдрахманова',audit:'В. Сергеев',final:'Председатель правления'},
+ comps:[{n:'Компания А',p:'6800'},{n:'Компания Б',p:'7000'},{n:'Компания В',p:'7100'},{n:'Компания Г',p:'6900'}],
+ ai:{act:'Оценка: условный пример сохранённой проверки. Параметры тарифа согласованы между собой.\n\nРиски и пробелы: чувствительность к долголетию высокая — требует проверки актуарием.\n\nЧто сделать до согласования: приложить расчёт чувствительности к протоколу.'}},
+
+/* ===================== T2. Аннуитет: отклонения на финальной сверке ===================== */
+{id:'test-t2-annuity-deviations',tpl:'annuity',skip:['reins'],
+ name:'ТЕСТ · Пенсионный аннуитет «Гарант-Плюс» (отклонения)',
+ approved:['idea','market','act','uw','inv','risk','fin','legal','compl','it','sales','audit'],
+ finalChecks:true,
+ f:{
+  desc:'Совместный аннуитет на супругов: выплаты продолжаются второму супругу после смерти первого.',
+  segment:'Оба сегмента',atype:'Совместный (на двух лиц)',source:'Пенсионные накопления ЕНПФ',owner:'Б. Тулегенов',
+  msize:'110',growth:'10',demand:'34',uniq:'2',refClient:'Мужчина 63 года и женщина 61 год, без гарантированного периода, премия 1 млн ₸',usp:'Единственный совместный аннуитет в линейке компании',
+  mort:'Собственная таблица компании',techRate:'10',index:'5',loading:'5',guar:'0',payout:'6300',
+  reserve:'Резерв по совместной жизни двух застрахованных; МСФО 17 — BBA.',
+  ages:'Оба супруга от пенсионного возраста до 75 лет',minprem:'1500000',clientDocs:'Удостоверения обоих супругов, свидетельство о браке, выписки ЕНПФ',
+  terms:'Выплаты ежемесячно; после смерти одного супруга — 100% второму; индексация ежегодно',
+  yield:'11',instr:'ГЦБ РК, депозиты БВУ',durA:'6',durL:'9.5',alm:'Длинных инструментов на рынке не хватает, разрыв дюраций 3,5 года.',
+  riskmap:'Долголетие — очень высокий (две жизни); процентный — высокий; инфляционный — средний',
+  stress:'Смертность −10%: CSM уходит в минус. Ставки −1 п.п.: норматив 1,02.',solv:'1.15',limits:'Премии до 2 млрд ₸ в год',
+  plan:'1800',contracts:'150',comm:'4',adm:'22000',nbm:'3.5',csm:'-40',
+  minIndex:'5',legalDocs:'Правила совместного аннуитета, договор, согласие второго супруга',legalRisks:'Наследование при одновременной смерти супругов — уточнить в правилах.',
+  kyc:'Идентификация обоих супругов',fatca:'Процедура FATCA/CRS внедрена',conflict:'Замечаний нет',
+  system:'Учётная система «Полис-Учёт» (условно)',enpf:'Протестирована',payProc:'Выплаты одному получателю с переходом на второго',reporting:'Отчётность настроена',
+  launch:'2027-04-01',budget:'15000000',channels:'Филиалы',training:'Курс 8 часов, аттестация 70% агентов',
+  auditNote:'Замечание: стресс-тест долголетия выполнен только по одному сценарию.',
+  minNBM:'5',minSpread:'1.5',maxGap:'2',minSolv:'1',decision:'',
+  compSrc:'Сайты компаний, эталонная пара 63/61 год; данные условные, ноябрь 2026'},
+ resp:{idea:'Б. Тулегенов',market:'А. Нурланова',act:'Т. Бекенов',uw:'Г. Садыкова',inv:'Е. Жумабаев',risk:'Р. Ким',fin:'Ж. Оспанова',legal:'Н. Айтжанов',compl:'С. Ли',it:'Д. Мусин',sales:'К. Абдрахманова',audit:'В. Сергеев'},
+ comps:[{n:'Компания А',p:'6800'},{n:'Компания Б',p:'7000'},{n:'Компания В',p:'7100'},{n:'Компания Г',p:'6900'}]},
+
+/* ===================== T3. Аннуитет: возврат на доработку ===================== */
+{id:'test-t3-annuity-rework',tpl:'annuity',skip:['audit'],
+ name:'ТЕСТ · Досрочный аннуитет «Досрочный старт» (на доработке)',
+ approved:['idea','market','act'],
+ rework:{uw:'Не описана проверка данных клиента через государственные базы; уточнить верхний предел возраста и пакет документов для досрочного аннуитета.'},
+ checks:{uw:[true,true,false]},
+ f:{
+  desc:'Аннуитет для клиентов, у которых накопления выше порога достаточности, до достижения пенсионного возраста.',
+  segment:'Досрочный аннуитет (накопления выше порога достаточности)',atype:'Пожизненный',source:'Пенсионные накопления ЕНПФ сверх порога достаточности',owner:'А. Ермекова',
+  msize:'25',growth:'18',demand:'31',uniq:'5',refClient:'Мужчина 50 лет, без гарантированного периода, премия 1 млн ₸',usp:'Выплаты с 50 лет без ожидания пенсионного возраста',
+  mort:'Таблица смертности населения РК (данные БНС)',techRate:'9.5',index:'5',loading:'4',guar:'0',payout:'5200',
+  reserve:'Резерв по методике компании; МСФО 17 — BBA.',
+  ages:'От 50 лет',minprem:'',clientDocs:'',terms:'Выплаты ежемесячно, индексация ежегодно',
+  compSrc:'Сайты двух компаний, предлагающих досрочный аннуитет; данные условные'},
+ resp:{idea:'А. Ермекова',market:'А. Нурланова',act:'Т. Бекенов',uw:'Г. Садыкова'},
+ comps:[{n:'Компания А',p:'5100'},{n:'Компания Д',p:'5350'},{n:'Компания Е',p:'5000'}]},
+
+/* ===================== T4. ОСНС: всё согласовано ===================== */
+{id:'test-t4-osns-ready',tpl:'osns',skip:[],
+ name:'ТЕСТ · ОСНС «Безопасный труд»',
+ approved:['idea','market','act','uw','claims','risk','reins','fin','legal','compl','it','sales','final'],
+ comments:{final:'Запуск одобрен. Приоритет — предприятия среднего класса риска с действующей системой охраны труда.'},
+ f:{
+  desc:'ОСНС для строительных и производственных компаний: выплата за 10 дней, личный менеджер урегулирования, бесплатный аудит охраны труда.',
+  segment:'Строительство и обрабатывающая промышленность, средний класс риска',channel:'Корпоративные продажи и брокеры',owner:'Е. Каримова',
+  msize:'60',growth:'8',demand:'40',uniq:'3',refClient:'Строительная компания, 400 работников, годовой ФОТ 2,4 млрд ₸, средний класс риска',usp:'Выплата за 10 дней и аудит охраны труда в подарок',
+  rclass:'Средний класс профессионального риска',tariff:'0.30',freq:'2.1',lr:'55',reserve:'РНП — pro rata temporis; РЗНУ — по заявленным убыткам; РПНУ — цепочно-лестничный метод по треугольникам за 5 лет.',
+  docs:'Список работников, справка о годовом ФОТ, акты о несчастных случаях за 5 лет, сведения об ОКЭД и подразделениях',limits:'До 10 000 работников; высокий и очень высокий класс — только после осмотра',
+  inspect:'Обязателен для 500+ работников и высокого класса риска',discounts:'Скидка до 10% при сертифицированной системе охраны труда, надбавка до 15% при росте травматизма',
+  claimDays:'10',claimStaff:'Группа урегулирования ОСНС, 4 сотрудника',claimProc:'Уведомление в течение суток, акт о несчастном случае, заключение медико-социальной экспертизы, решение о выплате и перечисление.',
+  annuityPay:'Единовременная выплата и ежемесячные выплаты при стойкой утрате трудоспособности по правилам компании.',
+  riskmap:'Групповой несчастный случай — высокий; концентрация на крупных работодателях — средний; рост тяжести — средний; резервный — низкий',
+  stress:'Групповой случай на 30 человек: норматив 1,32. Рост тяжести +30%: комбинированный коэффициент 89%.',solv:'1.5',maxEvent:'6',rlimits:'Не более 5% портфеля премий на одного работодателя',
+  reinNeed:'Эксцедент убытка на событие (групповой несчастный случай)',reinPartner:'Перестраховщик «Условный Ре», рейтинг A (условно)',reinTerms:'Приоритет 150 млн ₸, лимит 1,5 млрд ₸ на событие, стоимость 3% премии',
+  plan:'2200',contracts:'1300',comm:'10',er:'12',paa:'PAA: группа договоров не обременительна',
+  maxTariff:'0.5',maxClaimDays:'15',legalDocs:'Правила ОСНС, договор, заявление, уведомление о страховом случае, акт сверки ФОТ',legalRisks:'Существенных рисков не выявлено; предел тарифа и срок выплаты — условные значения, подтвердить по действующей редакции.',
+  kyc:'Идентификация работодателя и бенефициарных собственников, проверка по спискам ПОД/ФТ',conflict:'Вознаграждение брокеров в пределах тарифной политики',
+  system:'Учётная система «Полис-Учёт» (условно)',esbd:'Протестирована',notif:'Уведомления о продлении за 30 дней и запрос ФОТ ежеквартально',reporting:'Отчётность по ОСНС для АРРФР настроена, тестовая выгрузка принята',
+  launch:'2027-01-10',budget:'12000000',channels:'Корпоративный отдел (6 менеджеров), 3 брокера, региональные филиалы',training:'Курс 8 часов по ОСНС и классам риска, тестирование',
+  maxCR:'100',minSolv:'1',maxEventLim:'10',decision:'Одобрить запуск с 10.01.2027.',
+  compSrc:'Коммерческие предложения четырёх страховщиков для эталонной строительной компании; данные условные, ноябрь 2026'},
+ resp:{idea:'Е. Каримова',market:'А. Нурланова',act:'Т. Бекенов, назначенный актуарий',uw:'Г. Садыкова',claims:'М. Исаев',risk:'Р. Ким',reins:'О. Петрова',fin:'Ж. Оспанова',legal:'Н. Айтжанов',compl:'С. Ли',it:'Д. Мусин',sales:'Б. Омаров',final:'Председатель правления'},
+ comps:[{n:'Страховщик А',p:'0.28'},{n:'Страховщик Б',p:'0.32'},{n:'Страховщик В',p:'0.35'},{n:'Страховщик Г',p:'0.31'}]},
+
+/* ===================== T5. ОСНС: юридическая экспертиза с отклонениями ===================== */
+{id:'test-t5-osns-risks',tpl:'osns',skip:[],
+ name:'ТЕСТ · ОСНС «Горнодобыча» (риски)',
+ approved:['idea','market','act','uw','claims','risk','reins','fin'],
+ checks:{legal:[true,true,false,false,false]},
+ f:{
+  desc:'ОСНС для горнодобывающих предприятий с очень высоким классом профессионального риска.',segment:'Горнодобывающая промышленность, очень высокий класс риска',channel:'Брокеры',owner:'К. Бектуров',
+  msize:'60',growth:'6',demand:'32',uniq:'2',refClient:'Горнодобывающее предприятие, 1 800 работников, годовой ФОТ 9 млрд ₸, очень высокий класс риска',usp:'Специализированное урегулирование для горнодобычи',
+  rclass:'Очень высокий класс профессионального риска',tariff:'0.6',freq:'6.5',lr:'85',reserve:'РПНУ — метод Борнхюттера — Фергюсона из-за короткой статистики.',
+  docs:'Список работников, справка о ФОТ, акты о несчастных случаях за 5 лет, заключения по охране труда',limits:'Только после предстрахового осмотра',inspect:'Обязателен',
+  claimDays:'20',claimProc:'Уведомление, акт о несчастном случае, заключение медико-социальной экспертизы.',annuityPay:'Единовременные и периодические выплаты по правилам.',
+  riskmap:'Групповой несчастный случай — очень высокий; концентрация — высокий; рост тяжести — высокий',stress:'Обрушение с участием 50 человек: убыток 14% капитала, норматив 1,02.',solv:'1.1',maxEvent:'14',
+  reinNeed:'Эксцедент убытка на событие (групповой несчастный случай)',reinPartner:'Котировка получена, договор не подписан',
+  plan:'1200',contracts:'40',comm:'12',er:'15',paa:'PAA: есть признаки обременительности',
+  maxTariff:'0.5',maxClaimDays:'15',
+  compSrc:'Котировки трёх страховщиков через брокера; данные условные'},
+ resp:{idea:'К. Бектуров',market:'А. Нурланова',act:'Т. Бекенов',uw:'Г. Садыкова',claims:'М. Исаев',risk:'Р. Ким',reins:'О. Петрова',fin:'Ж. Оспанова',legal:'Н. Айтжанов'},
+ comps:[{n:'Страховщик А',p:'0.45'},{n:'Страховщик Б',p:'0.50'},{n:'Страховщик В',p:'0.48'}]},
+
+/* ===================== T6. Накопительное страхование: всё согласовано ===================== */
+{id:'test-t6-endow-ready',tpl:'endow',skip:['audit'],
+ name:'ТЕСТ · Накопительное страхование «Капитал 10»',
+ approved:['idea','market','act','uw','inv','risk','reins','fin','legal','compl','it','sales','final'],
+ comments:{final:'Запуск одобрен. Через 6 месяцев — отчёт по фактическим расторжениям.'},
+ f:{
+  desc:'Накопление капитала за 10 лет: гарантированная ставка 4%, участие в инвестиционном доходе 85%, выплата при дожитии или наследникам при смерти.',
+  segment:'Работающие клиенты 30–50 лет со средним и высоким доходом',currency:'Тенге',term:'10',payfreq:'Ежегодно',owner:'Л. Сапарова',
+  msize:'140',growth:'15',demand:'42',uniq:'4',refClient:'Женщина 40 лет, срок 10 лет, взнос 1 млн ₸ в год',usp:'Ежегодное начисление дополнительного дохода и онлайн-расчёт выкупной суммы',
+  mort:'Таблица БНС с поправкой на застрахованных',techRate:'4',clientYield:'9.5',share:'85',loading:'5',
+  surrender:'Выкупная сумма — 75% резерва во 2-й год с ростом до 98% к 10-му году.',riders:'Смерть по любой причине — возврат взносов с начисленным доходом; инвалидность I–II группы — освобождение от взносов.',
+  ages:'18–60 лет',sumLimit:'50000000',medical:'Анкета; обследование выше лимита или при отклонениях в анкете',docs:'Удостоверение личности, анкета, подтверждение источника средств для взносов выше 10 млн ₸',
+  yield:'12',instr:'ГЦБ РК, облигации квазигосударственного сектора, депозиты БВУ',durA:'9',durL:'10',fx:'Договор в тенге, валютного риска нет',
+  riskmap:'Расторжения — высокий; процентный — средний; смертность — низкий; операционный — низкий',stress:'Расторжения ×2: NBM 3,4%, CSM 120 млн ₸. Ставки −2 п.п.: норматив 1,22.',solv:'1.4',lapse:'8',limits:'Премии до 6 млрд ₸ в год',
+  reinNeed:'Перестрахование риска смерти и инвалидности',reinPartner:'Перестраховщик «Условный Ре», рейтинг A (условно)',reinTerms:'Квота 50% по риску смерти, стоимость 1,1% премии',
+  plan:'4800',contracts:'3200',comm:'7',adm:'8000',nbm:'6',csm:'180',
+  maxTech:'5',legalDocs:'Правила, договор, иллюстрация доходности, таблица выкупных сумм, памятка клиенту',legalRisks:'Иллюстрация доходности согласована; предельная ставка — условное значение, подтвердить по действующей редакции.',
+  kyc:'Идентификация, проверка источника средств для крупных взносов, проверка по спискам ПОД/ФТ',fatca:'Процедура FATCA/CRS внедрена',conflict:'Реклама согласована',
+  system:'Учётная система «Полис-Учёт» (условно)',cabinet:'Протестирована',invAcc:'Ежегодное начисление дополнительного дохода по решению правления, отражение в личном кабинете',reporting:'Отчётность для АРРФР настроена',
+  launch:'2027-03-01',budget:'30000000',channels:'Агентская сеть, 2 банка-партнёра, онлайн-заявка',training:'Курс 12 часов, аттестация продавцов банков-партнёров',
+  minNBM:'5',minSpread:'1.5',maxGap:'2',minSolv:'1',maxLapse:'15',decision:'Одобрить запуск с 01.03.2027.',
+  compSrc:'Иллюстрации доходности на сайтах четырёх КСЖ для эталонного клиента; данные условные, ноябрь 2026'},
+ resp:{idea:'Л. Сапарова',market:'А. Нурланова',act:'Т. Бекенов, назначенный актуарий',uw:'Г. Садыкова',inv:'Е. Жумабаев',risk:'Р. Ким',reins:'О. Петрова',fin:'Ж. Оспанова',legal:'Н. Айтжанов',compl:'С. Ли',it:'Д. Мусин',sales:'К. Абдрахманова',final:'Председатель правления'},
+ comps:[{n:'КСЖ А',p:'9.0'},{n:'КСЖ Б',p:'9.2'},{n:'КСЖ В',p:'9.6'},{n:'КСЖ Г',p:'9.4'}]}
+];
+
+/* Собирает продукты из сценариев: статусы, чек-листы, даты согласования и журнал. */
+function buildFixtures(now){now=now||Date.now();const out={};
+ FIXTURES.forEach((fx,n)=>{const t=TPL[fx.tpl],p=blank(fx.tpl,fx.skip.slice(),fx.name);p.id=fx.id;
+  const L=S(p),steps=L.length+2,start=now-(steps*2+n)*FX_DAY;p.created=start;
+  Object.assign(p.f,fx.f);for(const [k,v] of Object.entries(fx.resp||{}))p.f['resp_'+k]=v;
+  p.comps=fx.comps.map(c=>({...c}));
+  const log=[{t:start,u:'',x:'Продукт создан по карте «'+t.name+'» (тестовые данные)'}];
+  L.forEach((s,i)=>{const at=start+(i+1)*2*FX_DAY;
+   if(fx.approved.includes(s.id)){p.status[s.id]='approved';p.checks[s.id]=s.checks.map(()=>true);p.at[s.id]=at;p.by[s.id]='';
+    if(fx.comments&&fx.comments[s.id])p.comment[s.id]=fx.comments[s.id];
+    log.push({t:at,u:'',x:'«'+s.name+'» согласован'+(p.comment[s.id]?': '+p.comment[s.id]:'')})}
+   else if(fx.rework&&fx.rework[s.id]){p.status[s.id]='rework';p.comment[s.id]=fx.rework[s.id];
+    log.push({t:at,u:'',x:'«'+s.name+'» возвращён на доработку: '+fx.rework[s.id]})}
+   if(fx.checks&&fx.checks[s.id])p.checks[s.id]=fx.checks[s.id].slice();
+   if(s.gates&&fx.finalChecks)p.checks[s.id]=s.checks.map(()=>true)});
+  for(const [k,x] of Object.entries(fx.ai||{})){const at=(p.at[k]||now)-FX_DAY/4;p.ai[k]={x,t:at};log.push({t:at,u:'',x:'Claude проверил этап «'+L.find(s=>s.id===k).name+'»'})}
+  p.log=log.sort((a,b)=>b.t-a.t);out[p.id]=p});
+ return out}
+
+/* ---- js/render.js ---- */
+/* Отрисовка интерфейса */
+/* ================= ОТРИСОВКА ================= */
+function renderAll(){renderSel();if(view==='new'){renderNew();return}if(!cur||!P()){renderEmpty();return}renderMain()}
+function renderSel(){const ids=Object.keys(products).filter(id=>known(products[id])).sort((a,b)=>(products[b].created||0)-(products[a].created||0));
+ $('#psel').innerHTML=ids.length?ids.map(id=>`<option value="${esc(id)}"${id===cur?' selected':''}>${esc(products[id].f?.name||'Без названия')}</option>`).join(''):'<option>Нет продуктов</option>';$('#psel').disabled=!ids.length}
+function renderEmpty(){$('#app').innerHTML=`<div class="wrap empty"><h1>Проведите новый продукт через все подразделения</h1>
+ <p>Выберите технологическую карту компании по страхованию жизни — пенсионный аннуитет, накопительное страхование жизни или ОСНС — и отметьте подразделения, которые участвуют в маршруте. Этап нельзя согласовать, пока не заполнены обязательные данные и не закрыт чек-лист; следующий открывается только после согласования предыдущего. В конце система сверяет продукт с рынком и выпускает паспорт.</p>
+ <div class="dec"><button class="btn pri" data-act="new">Создать продукт</button>${Object.values(TPL).map(t=>`<button class="btn" data-act="demo" data-tpl="${t.id}">Пример: ${esc(({annuity:'пенсионный аннуитет',endow:'накопительное страхование',osns:'ОСНС'})[t.id]||t.name)}</button>`).join('')}<button class="btn" data-act="fixtures">Тестовые данные: ${FIXTURES.length} продуктов</button></div>
+ ${hiddenCount()?`<p class="small" style="margin-top:16px">Скрыто продуктов по удалённой карте «Производство»: ${hiddenCount()}. Они остаются в выгрузке JSON.</p>`:''}</div>`}
+
+function renderNew(){const t=TPL[draft.tpl];
+ $('#app').innerHTML=`<div class="wrap empty" style="max-width:900px"><h1>Новый продукт</h1>
+ <h3 class="lbl">1. Технологическая карта</h3><div class="tpls">${Object.values(TPL).map(x=>`<label class="tpl${x.id===draft.tpl?' on':''}"><input type="radio" name="tpl" value="${x.id}"${x.id===draft.tpl?' checked':''}><b>${esc(x.name)}</b><span>${esc(x.sub)}</span><span class="small">${x.stages.length} этапов</span></label>`).join('')}</div>
+ <h3 class="lbl">2. Подразделения в маршруте</h3><p class="small" style="margin:0 0 8px">Обязательные подразделения входят всегда. Необязательные можно исключить — маршрут сомкнётся без них.</p>
+ <ol class="deps">${t.stages.map(s=>`<li><label><input type="checkbox" data-dep="${s.id}"${s.opt?'':' disabled'}${(draft.skip||[]).includes(s.id)?'':' checked'}><span><b>${esc(s.dept)}</b> — ${esc(s.name)}</span><span class="small">${s.opt?'по выбору':'обязательно'}</span></label></li>`).join('')}</ol>
+ <h3 class="lbl">3. Название</h3><input class="i" id="nname" value="${esc(draft.name||'')}" placeholder="Например: Пенсионный аннуитет «Надёжный»" style="max-width:560px">
+ <div class="dec"><button class="btn pri" data-act="create">Создать маршрут</button><button class="btn" data-act="cancel">Отмена</button></div></div>`}
+
+const stampSvg='<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function overall(p){const L=S(p);if(p.status.final==='approved')return['Готов к запуску','c-ok'];
+ const rw=L.find(s=>p.status[s.id]==='rework');if(rw)return['На доработке: '+rw.name,'c-rw'];
+ const i=firstOpen(p);return['Этап '+(i+1)+' из '+L.length+': '+L[i].name,'c-op']}
+
+function renderMain(){const p=P(),L=S(p),c=calc(p),o=overall(p),done=L.filter(s=>p.status[s.id]==='approved').length;
+ $('#app').innerHTML=`<section class="hero"><div class="wrap">
+  <div><div class="eyebrow">${esc(T(p).name)}</div><h1 id="hname">${esc(p.f.name||'Без названия')}</h1>
+   <div class="status"><span class="chip ${o[1]}">${esc(o[0])}</span> &nbsp;Согласовано <b>${done} из ${L.length}</b> этапов</div>
+   <div class="prog"><i style="width:${done/L.length*100}%"></i></div></div>
+  <div class="score"><div class="n" id="hscore">${fmt(c.score)}</div><div class="l">балл соответствия рынку из 100</div></div>
+ </div></section>
+ <nav class="wrap"><div class="route" id="route"></div></nav>
+ <div class="wrap main"><section id="stage"></section><aside id="side"></aside></div>`;
+ renderRoute();renderStage();renderSide()}
+
+function renderRoute(){const p=P();$('#route').innerHTML=S(p).map((s,i)=>{const k=st(p,i);
+ return `<button class="st ${k}${i===si?' cur':''}" data-go="${i}" aria-current="${i===si?'step':'false'}" title="${esc(s.dept)}"><span class="seal">${k==='ok'?stampSvg:i+1}</span><span class="nm">${esc(s.name)}</span><span class="dp">${esc(s.dept)}</span></button>`}).join('');
+ const el=$('#route .cur');if(el)el.scrollIntoView({block:'nearest',inline:'nearest'})}
+
+function fieldHtml(p,x,ro){const v=p.f[x.k]??'',id='f_'+x.k,lab=`${esc(x.l)}${x.r?' <span class="req">*</span>':''}`,dis=ro?' disabled':'';
+ let inp;if(x.t==='area')inp=`<textarea class="i" id="${id}" data-k="${x.k}"${dis}>${esc(v)}</textarea>`;
+ else if(x.t==='sel')inp=`<select class="i" id="${id}" data-k="${x.k}"${dis}>${x.o.map(o=>`<option value="${esc(o)}"${o===v?' selected':''}>${o?esc(o):'— выберите —'}</option>`).join('')}</select>`;
+ else inp=`<input class="i" id="${id}" data-k="${x.k}" value="${esc(v)}" ${x.t==='num'?'inputmode="decimal"':x.t==='date'?'type="date"':''}${dis}>`;
+ return `<label class="f${x.full?' full':''}" for="${id}"><span>${lab}</span>${inp}</label>`}
+
+function renderStage(){const p=P(),L=S(p),s=L[si],k=st(p,si),ro=k==='ok'||k==='lock',ch=p.checks[s.id]||[],ai=p.ai[s.id];
+ const chip={ok:['Согласовано','c-ok'],rw:['На доработке','c-rw'],op:['В работе','c-op'],lock:['Ожидает предыдущий этап','c-lk']}[k];
+ let h=`<div class="shead"><div><div class="eyebrow">Этап ${si+1} из ${L.length} · ${esc(s.dept)}</div><h2>${esc(s.name)}</h2></div><span class="chip ${chip[1]}">${chip[0]}</span></div>`;
+ if(k==='lock')h+=`<p class="note">Этап откроется после согласования этапа «${esc(L[si-1].name)}». Технологическая цепочка соблюдается строго по порядку.</p>`;
+ if(k==='ok')h+=`<p class="note">Этап закрыт согласованием. Чтобы изменить данные, отзовите согласование — все последующие этапы вернутся в работу.</p>`;
+ if(k==='rw'&&p.comment[s.id])h+=`<p class="note r">Возвращено на доработку: ${esc(p.comment[s.id])}</p>`;
+ h+=`<div class="grid">${fieldHtml(p,{k:'resp_'+s.id,l:'Ответственный от подразделения'},ro)}<span></span>${s.fields.map(x=>fieldHtml(p,x,ro)).join('')}</div>`;
+ if(s.comps)h+=compsHtml(p,ro);
+ if(s.econ)h+=`<div class="blk"><h3>Расчёт экономики</h3><div class="figs" id="econ"></div></div>`;
+ if(s.gates)h+=`<div class="blk"><h3>Сверка с рынком и технологической цепочкой</h3><ul class="gates" id="gates"></ul></div>`;
+ h+=`<div class="blk"><h3>Чек-лист подразделения</h3><ul class="checks">${s.checks.map((c,j)=>`<li><label><input type="checkbox" id="chk_${j}" data-chk="${j}"${ch[j]?' checked':''}${ro?' disabled':''}>${esc(c)}</label></li>`).join('')}</ul></div>`;
+ h+=`<div class="blk ai"><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><div><b>Экспертная проверка Claude</b><div class="meta">Взгляд: ${esc(s.ai)}. Без доступа к интернету — оценки рынка и права нужно перепроверить.</div></div>
+  <button class="btn" data-act="ai" id="aibtn"${sample?'':' disabled'}>${ai?'Проверить заново':'Проверить этап'}</button></div>
+  <div class="out" id="aiout">${ai?esc(ai.x):'<span class="meta">'+(sample?'Claude проверит данные этапа с учётом предыдущих этапов и укажет риски.':'Станет доступно после подключения проверки Claude к странице.')+'</span>'}</div>${ai?`<div class="meta" style="margin-top:8px">Проверка от ${dt(ai.t)}</div>`:''}</div>`;
+ h+=`<div class="blk"><h3>Решение</h3>`;
+ if(k==='ok'){h+=`<div class="who">Согласовано ${dt(p.at[s.id])}${p.by[s.id]?` · <span data-uid="${esc(p.by[s.id])}">сотрудник</span>`:''}${p.comment[s.id]?' · '+esc(p.comment[s.id]):''}</div>
+  <div class="dec"><button class="btn warn" data-act="revoke">Отозвать согласование</button></div>`}
+ else if(k!=='lock'){h+=`<label class="f" for="cmt">Комментарий${s.gates?' (обязателен, если сверка выявила отклонения)':' (обязателен при возврате)'}<textarea class="i" id="cmt" data-cmt="1">${esc(k==='rw'?'':p.comment[s.id]||'')}</textarea></label>
+  <div class="dec"><button class="btn pri" data-act="approve" id="apr">Согласовать этап</button><button class="btn warn" data-act="rework">Вернуть на доработку</button></div><div class="miss" id="miss"></div>`}
+ h+=`</div>`;
+ if(s.gates)h+=passHtml(p);
+ h+=`<div class="nav"><button class="btn" data-go="${si-1}"${si===0?' disabled':''}>← Предыдущий</button><button class="btn" data-act="del">Удалить продукт</button><button class="btn" data-go="${si+1}"${si===L.length-1?' disabled':''}>Следующий →</button></div>`;
+ $('#stage').innerHTML=h;updateLive();fillNames()}
+
+function compsHtml(p,ro){const cf=T(p).comp,rows=(p.comps||[]).map((c,i)=>`<tr><td><input class="i" aria-label="Название" data-comp="${i}:n" value="${esc(c.n)}"${ro?' disabled':''}></td><td class="num"><input class="i" style="text-align:right" inputmode="decimal" aria-label="${esc(cf.col)}" data-comp="${i}:p" value="${esc(c.p)}"${ro?' disabled':''}></td><td>${ro?'':`<button class="btn" data-act="delcomp" data-i="${i}" aria-label="Удалить">×</button>`}</td></tr>`).join('');
+ return `<div class="blk" id="comps" tabindex="-1"><h3>${esc(cf.title)}</h3><table class="stack"><thead><tr><th>Компания / аналог</th><th class="num">${esc(cf.col)}</th><th></th></tr></thead><tbody>${rows||`<tr><td colspan="3" class="small">${esc(cf.hint)}</td></tr>`}</tbody></table>${ro?'':`<div class="dec"><button class="btn" data-act="addcomp">Добавить</button><button class="btn" data-act="pastecomp">Вставить таблицу из Excel</button></div>
+ <div id="pastebox" hidden><label class="f" for="pastein" style="margin-top:12px">Скопируйте из Excel или с сайта два столбца — название и значение (${esc(cf.col)}). Строки без числа пропускаются.<textarea class="i" id="pastein" placeholder="КСЖ А&#9;6700&#10;КСЖ Б&#9;7200"></textarea></label>
+ <div class="dec"><button class="btn pri" data-act="importcomp">Загрузить строки</button><label class="small" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pastereplace" checked style="width:20px;height:20px;accent-color:var(--teal)">Заменить текущий список</label></div></div>`}
+ <label class="f" for="f_compSrc" style="margin-top:14px">Источник данных и дата<input class="i" id="f_compSrc" data-k="compSrc" value="${esc(p.f.compSrc||'')}" placeholder="Например: тарифы с сайтов компаний, статистика регулятора на 01.11.2026"${ro?' disabled':''}></label></div>`}
+
+function updateLive(){const p=P(),c=calc(p);
+ const e=$('#econ');if(e)e.innerHTML=T(p).figs(c).map(x=>`<div><b>${esc(x[1])}</b><span>${esc(x[0])}</span></div>`).join('');
+ const g=$('#gates');if(g)g.innerHTML=gates(p).map(x=>`<li><span class="dot ${x.ok===null?'u':x.ok?'y':'n'}">${x.ok===null?'':x.ok?'✓':'!'}</span><span>${esc(x.t)}</span><span class="v">${esc(x.v)}</span></li>`).join('');
+ const m=$('#miss'),a=$('#apr');
+ document.querySelectorAll('#stage .need').forEach(x=>x.classList.remove('need'));
+ if(m&&a){const ms=missing(p,si);a.disabled=ms.length>0;
+  m.innerHTML=ms.length?'Для согласования не хватает:<ul class="misslist">'+ms.map(x=>`<li><button type="button" class="lnk" ${x.go!=null?`data-go="${x.go}"`:`data-jump="${esc(x.ref)}"`}>${esc(x.t)}</button></li>`).join('')+'</ul>':'';
+  for(const x of ms){const el=x.ref&&document.getElementById(x.ref);if(el)(el.closest('label.f,.checks li')||el).classList.add('need')}}
+ $('#hscore').textContent=fmt(c.score);$('#hname').textContent=p.f.name||'Без названия'}
+
+function renderSide(){const p=P(),c=calc(p),sd=T(p).side(c),gs=gates(p),ok=gs.filter(x=>x.ok).length,bad=gs.filter(x=>x.ok===false).length,L=S(p);
+ const kv=a=>'<dl class="kv">'+a.map(x=>`<dt>${esc(x[0])}</dt><dd>${esc(x[1])}</dd>`).join('')+'</dl>';
+ $('#side').innerHTML=`<div class="box"><h3>Сверка с рынком</h3>${c.parts.map(x=>`<div class="bar"><span>${x[0]}</span><span class="v">${fmt(x[1],1)} / ${x[2]}</span><span class="t"><i style="width:${x[1]/x[2]*100}%"></i></span></div>`).join('')}<div style="margin-top:14px">${kv(sd.m)}</div></div>
+ <div class="box"><h3>Ключевые показатели</h3>${kv(sd.e)}</div>
+ <div class="box"><h3>Контрольные точки</h3><p class="small" style="margin:0 0 10px">${ok} выполнено, ${bad} с отклонением, ${gs.length-ok-bad} без данных</p>
+  <div class="dec" style="margin-top:0"><button class="btn" data-act="copy">Скопировать паспорт</button><button class="btn" data-go="${L.length-1}">Открыть сверку</button></div><div id="copyw"></div></div>
+ <div class="box"><h3>Подразделения</h3><ul class="log">${L.map((s,i)=>`<li>${i+1}. ${esc(s.dept)} <span class="small">· ${({ok:'согласовано',rw:'на доработке',op:'в работе',lock:'ожидает'})[st(p,i)]}</span></li>`).join('')}</ul>${(p.skip||[]).length?`<p class="small">Исключены: ${esc(T(p).stages.filter(s=>p.skip.includes(s.id)).map(s=>s.dept).join(', '))}</p>`:''}</div>
+ <div class="box"><h3>Журнал</h3><ul class="log">${(p.log||[]).slice(0,12).map(l=>`<li><time>${dt(l.t)}${l.u?` · <span data-uid="${esc(l.u)}">сотрудник</span>`:''}</time>${esc(l.x)}</li>`).join('')||'<li class="small">Пока пусто</li>'}</ul></div>`;fillNames()}
+
+function passportText(p){const c=calc(p),L=S(p),cf=T(p).comp,out=['ПАСПОРТ ПРОДУКТА: '+(p.f.name||''),'Технологическая карта: '+T(p).name,'Статус: '+overall(p)[0],''];
+ L.forEach((s,i)=>{out.push('== '+(i+1)+'. '+s.name+' ('+s.dept+') — '+({ok:'согласовано',rw:'на доработке',op:'в работе',lock:'не начат'}[st(p,i)]));
+  if(filled(p.f['resp_'+s.id]))out.push('Ответственный: '+p.f['resp_'+s.id]);
+  s.fields.forEach(x=>{if(filled(p.f[x.k]))out.push(x.l+': '+p.f[x.k])});
+  if(s.comps)(p.comps||[]).forEach(x=>{if(filled(x.n))out.push(x.n+' — '+cf.col+': '+x.p)});
+  if(s.econ)out.push('Расчёт: '+T(p).figs(c).map(x=>x[0]+' '+x[1]).join('; '));
+  if(p.comment[s.id])out.push('Комментарий: '+p.comment[s.id]);out.push('')});
+ out.push('== Сверка с рынком (балл '+fmt(c.score)+' из 100)');gates(p).forEach(g=>out.push((g.ok===null?'[ ] ':g.ok?'[+] ':'[!] ')+g.t+' — '+g.v));return out.join('\n')}
+
+function passHtml(p){const c=calc(p),ready=p.status.final==='approved';
+ const sec=S(p).slice(0,-1).map(s=>{const rows=s.fields.filter(x=>filled(p.f[x.k])).slice(0,4).map(x=>`<p><span class="small">${esc(x.l)}:</span> ${esc(p.f[x.k])}</p>`).join('');return `<h4>${esc(s.dept)} · ${esc(s.name)} · ${p.status[s.id]==='approved'?'согласовано':'не согласовано'}</h4>${rows||'<p class="small">Нет данных</p>'}`}).join('');
+ return `<div class="pass"><div class="eyebrow">Паспорт продукта · ${esc(T(p).name)}</div><h3>${esc(p.f.name||'')}</h3>
+ <p style="margin-top:8px">Балл рынка ${fmt(c.score)} из 100 · ${esc(T(p).head(c))}</p>
+ ${ready?`<div class="stamp">Готов к запуску · ${dt(p.at.final)}</div>`:'<p class="small">Паспорт станет итоговым после финального решения.</p>'}${sec}</div>`}
+
+
+/* ---- js/actions.js ---- */
+/* Действия пользователя и обработчики событий */
+/* ================= ДЕЙСТВИЯ ================= */
+function openProduct(id){view='main';cur=id;si=firstOpen(products[id]);renderAll()}
+function go(i){const p=P();if(!p||i<0||i>=S(p).length)return;si=i;renderRoute();renderStage();window.scrollTo({top:$('#route').getBoundingClientRect().top+scrollY-10,behavior:'smooth'})}
+function create(p){products[p.id]=p;addLog(p,'Продукт создан по карте «'+T(p).name+'»');touch(p);openProduct(p.id)}
+function demo(tpl){const p=blank(tpl),t=TPL[tpl],done=t.demo(p),now=Date.now();
+ done.forEach((id,i)=>{const s=t.stages.find(x=>x.id===id);if(!s||(p.skip||[]).includes(id))return;p.status[id]='approved';p.checks[id]=s.checks.map(()=>true);p.at[id]=now-(done.length-i)*864e5;p.by[id]=uid||''});
+ if(tpl==='annuity')p.f.resp_act='Назначенный актуарий';
+ p.log=[{t:now,u:uid||'',x:'Пример: согласованы этапы до финансового обоснования включительно'}];products[p.id]=p;touch(p);openProduct(p.id)}
+
+function decide(kind){const p=P(),L=S(p),s=L[si],cm=($('#cmt')?.value||'').trim(),m=$('#miss');
+ if(kind==='rework'){if(!cm){m.textContent='Укажите в комментарии, что нужно доработать.';$('#cmt').focus();return}
+  p.status[s.id]='rework';p.comment[s.id]=cm;addLog(p,'«'+s.name+'» возвращён на доработку: '+cm)}
+ if(kind==='approve'){if(missing(p,si).length)return;
+  if(s.gates&&gates(p).some(g=>g.ok===false)&&!cm){m.textContent='Сверка выявила отклонения: опишите в комментарии, почему риск принимается.';$('#cmt').focus();return}
+  p.status[s.id]='approved';p.comment[s.id]=cm;p.at[s.id]=Date.now();p.by[s.id]=uid||'';addLog(p,'«'+s.name+'» согласован'+(cm?': '+cm:''))}
+ if(kind==='revoke'){revokeFrom(p,si);addLog(p,'Отозвано согласование «'+s.name+'», последующие этапы возвращены в работу')}
+ touch(p);if(kind==='approve'&&si<L.length-1)si++;renderMain();renderSel()}
+
+async function runAI(){const p=P(),s=S(p)[si],out=$('#aiout'),b=$('#aibtn');if(!sample)return;
+ b.disabled=true;out.textContent='Claude изучает материалы…';
+ const prompt=`Ты — ${s.ai}. Контекст: ${T(p).ctx}. Новый продукт проходит маршрут согласования подразделений. Проверь этап «${s.name}» (${s.dept}) с позиции своего подразделения, учитывая данные предыдущих этапов и согласованность всей цепочки.
+
+Данные проекта:
+${passportText(p)}
+
+Ответь по-русски простым текстом без markdown, не более 250 слов, тремя разделами: «Оценка», «Риски и пробелы», «Что сделать до согласования». У тебя нет доступа к интернету и актуальным данным: где говоришь о рыночных условиях, нормах права, требованиях регулятора или ставках, помечай это как оценку, требующую проверки специалистом.`;
+ try{const r=await sample(prompt,{onText:({text})=>{out.textContent=text},modelTier:'default'});
+  p.ai[s.id]={x:r.text,t:Date.now()};addLog(p,'Claude проверил этап «'+s.name+'»');touch(p);renderStage();renderSide()}
+ catch(e){out.textContent=e&&e.code==='rate_limited'?'Слишком много запросов — попробуйте через минуту.':e&&e.code==='not_granted'?'Проверка Claude недоступна в этом просмотре.':'Не удалось получить ответ. Попробуйте ещё раз.';if(e&&e.code==='not_granted')sample=null;b.disabled=!sample}}
+
+async function copyPass(){const t=passportText(P()),w=$('#copyw');try{await navigator.clipboard.writeText(t);w.innerHTML='<p class="small">Паспорт скопирован в буфер обмена.</p>'}
+ catch(e){w.innerHTML='<textarea id="copyfall" class="i" readonly></textarea>';const ta=$('#copyfall');ta.value=t;ta.select()}}
+
+/* Переход к незаполненному полю из списка недостающего */
+function jump(ref){const el=document.getElementById(ref);if(!el)return;
+ el.scrollIntoView({block:'center',behavior:'smooth'});
+ const f=el.matches('input,select,textarea,button')?el:el.querySelector('input,select,textarea,button');if(f)f.focus({preventScroll:true})}
+
+/* Резервная копия всех продуктов в JSON-файл и загрузка обратно (пока общее хранилище не подключено) */
+/* Выгрузка открывает панель с JSON: его можно скопировать (работает везде, в том числе в опубликованном артефакте)
+   или скачать файлом (работает при локальном запуске; в артефакте браузер скачивание блокирует). */
+const exportText=()=>JSON.stringify({app:'product-route',v:1,at:new Date().toISOString(),products},null,2);
+function exportJson(){const ids=Object.keys(products);if(!ids.length){setSync('Нет продуктов для выгрузки');return}
+ const box=$('#exportbox'),ta=$('#exporttext');ta.value=exportText();box.hidden=false;$('#exportmsg').textContent='Продуктов в копии: '+ids.length+'. Сохраните текст в файл .json или передайте коллеге.';ta.focus();ta.select()}
+async function exportCopy(){const ta=$('#exporttext'),m=$('#exportmsg');
+ try{await navigator.clipboard.writeText(ta.value);m.textContent='Скопировано в буфер обмена.'}catch(e){ta.focus();ta.select();m.textContent='Буфер обмена недоступен: текст выделен, скопируйте его сочетанием Ctrl+C.'}}
+function exportFile(){const blob=new Blob([$('#exporttext').value],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='marshrut-produktov-'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+ $('#exportmsg').textContent='Если файл не скачался, скопируйте текст кнопкой «Скопировать».'}
+function importJson(text){let data;try{data=JSON.parse(text)}catch(e){setSync('Файл не похож на выгрузку приложения');return}
+ const src=data&&data.products&&typeof data.products==='object'?data.products:data;let n=0;
+ for(const [id,v] of Object.entries(src||{})){if(!v||typeof v!=='object'||!v.f||!v.status||!TPL[v.tpl])continue;
+  v.id=id;for(const k of ['skip','comps','log'])if(!Array.isArray(v[k]))v[k]=[];
+  for(const k of ['checks','by','at','comment','ai'])if(!v[k]||typeof v[k]!=='object')v[k]={};
+  products[id]=v;addLog(v,'Продукт загружен из файла');touch(v);n++}
+ if(!n){setSync('В файле не найдено продуктов');return}
+ setSync('Загружено продуктов: '+n);if(!cur||!P())cur=firstId();openProduct(cur)}
+
+/* Тестовые данные из js/fixtures.js: повторная загрузка заменяет их свежей копией, устаревшие тестовые продукты удаляются */
+function loadFixtures(){const fx=buildFixtures(Date.now()),ids=Object.keys(fx);
+ for(const id of Object.keys(products))if(id.startsWith("test-")&&!fx[id]){delete products[id];clearTimeout(timers[id]);if(db)db.doc("products/"+id).delete().catch(()=>{})}
+ if(!db)lsSave();
+ for(const id of ids){products[id]=fx[id];touch(fx[id])}
+ setSync("Загружено тестовых продуктов: "+ids.length);openProduct(ids[0])}
+
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g&&!g.disabled){go(+g.dataset.go);return}
+ const jm=e.target.closest('[data-jump]');if(jm){jump(jm.dataset.jump);return}
+ const a=e.target.closest('[data-act]');if(!a||a.disabled)return;const act=a.dataset.act,p=P();
+ if(act==='export'){exportJson();return}
+ if(act==='exportcopy'){exportCopy();return}
+ if(act==='exportfile'){exportFile();return}
+ if(act==='exportclose'){$('#exportbox').hidden=true;return}
+ if(act==='importtext'){importJson($('#exporttext').value);$('#exportbox').hidden=true;return}
+ if(act==='import'){$('#importfile').click();return}
+ if(act==='fixtures'){loadFixtures();return}
+ if(act==='new'){view='new';draft={tpl:'annuity',skip:[],name:''};renderAll()}
+ else if(act==='cancel'){view='main';renderAll()}
+ else if(act==='create'){const nm=($('#nname').value||'').trim();create(blank(draft.tpl,draft.skip,nm||'Новый продукт'))}
+ else if(act==='demo')demo(a.dataset.tpl);
+ else if(act==='approve'||act==='rework'||act==='revoke')decide(act);
+ else if(act==='ai')runAI();else if(act==='copy')copyPass();
+ else if(act==='pastecomp'){const b=$('#pastebox');b.hidden=!b.hidden;if(!b.hidden)$('#pastein').focus()}
+ else if(act==='importcomp'){const rows=parseComps($('#pastein').value);
+  if(!rows.length){$('#pastein').focus();return}p.comps=$('#pastereplace').checked?rows:(p.comps||[]).concat(rows);addLog(p,'Загружено строк рыночных данных: '+rows.length);touch(p);renderStage();renderSide()}
+ else if(act==='addcomp'){p.comps=p.comps||[];p.comps.push({n:'',p:''});touch(p);renderStage()}
+ else if(act==='delcomp'){p.comps.splice(+a.dataset.i,1);touch(p);renderStage();renderSide()}
+ else if(act==='del'){if(a.dataset.sure){const id=p.id;delete products[id];clearTimeout(timers[id]);if(db)db.doc('products/'+id).delete().catch(()=>{});else lsSave();cur=firstId();if(cur)openProduct(cur);else renderAll()}
+  else{a.dataset.sure=1;a.textContent='Точно удалить?';a.classList.add('warn');setTimeout(()=>{if(a.isConnected){delete a.dataset.sure;a.textContent='Удалить продукт';a.classList.remove('warn')}},4000)}}});
+
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.id==='importfile'){const file=t.files&&t.files[0];if(file)file.text().then(importJson);t.value='';return}
+ if(view==='new'&&t.name==='tpl'){draft.tpl=t.value;draft.skip=[];draft.name=$('#nname').value;renderNew();return}
+ if(view==='new'&&t.dataset.dep){const id=t.dataset.dep;draft.skip=draft.skip.filter(x=>x!==id);if(!t.checked)draft.skip.push(id);return}});
+document.addEventListener('input',e=>{const t=e.target,p=P();if(view!=='main'||!p)return;
+ if(t.dataset.k){p.f[t.dataset.k]=t.value}
+ else if(t.dataset.chk){const id=S(p)[si].id;p.checks[id]=p.checks[id]||[];p.checks[id][+t.dataset.chk]=t.checked}
+ else if(t.dataset.comp){const[i,f]=t.dataset.comp.split(':');p.comps[+i][f]=t.value}
+ else if(t.dataset.cmt){updateLive();return}else return;
+ touch(p);updateLive();renderSide();if(t.dataset.k==='name')renderSel()});
+$('#psel').addEventListener('change',e=>openProduct(e.target.value));
+
+
+/* ---- js/main.js ---- */
+/* Запуск приложения и подключение общего хранилища */
+/* ================= ЗАПУСК ================= */
+/* В опубликованном артефакте браузер не даёт скачивать файлы: оставляем только копирование JSON */
+if(window.claude){const b=document.querySelector("[data-act=exportfile]");if(b)b.hidden=true}
+lsLoad();cur=firstId();if(cur)si=firstOpen(products[cur]);renderAll();
+(async()=>{const C=window.claude;if(!C||!C.use)return;
+ [db,user,sample]=await Promise.all([C.use('db').catch(()=>null),C.use('user').catch(()=>null),C.use('sample').catch(()=>null)]);
+ if(user){try{uid=await user.id()}catch(e){}}
+ if(sample&&P()&&view==='main')renderStage();
+ if(!db)return;
+ setSync('Подключение…');const to=setTimeout(()=>setSync('Общее хранилище недоступно — данные могут быть неактуальны'),10000);
+ let first=true;
+ db.collection('products').onSnapshot(snap=>{if(!snap.metadata.fromCache){clearTimeout(to);setSync('Общий доступ · синхронизировано')}
+  const next={};let full=first;
+  for(const d of snap.docs){const v=JSON.parse(JSON.stringify(d.data()||{}));const loc=products[d.id];
+   if(loc&&!first&&(timers[d.id]||busy[d.id])){next[d.id]=loc;continue}
+   if(!v.f||!v.status)continue;v.id=d.id;next[d.id]=v;
+   if(d.id===cur&&(!loc||(v._c!==CID&&v._t!==loc._t)))full=true}
+  const hadCur=cur&&next[cur];products=next;
+  if(first||!hadCur){cur=hadCur?cur:firstId();if(cur)si=firstOpen(products[cur]);first=false;renderAll();return}
+  renderSel();if(view!=='main')return;
+  if(full){const ae=document.activeElement,aid=ae&&ae.id;renderMain();if(aid){const n=document.getElementById(aid);if(n)n.focus()}}else{renderRoute();renderSide();updateLive()}
+ },()=>{clearTimeout(to);setSync('Общее хранилище недоступно')});
+})();
+
+}
+</script>
