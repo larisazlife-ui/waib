@@ -16,7 +16,10 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 ## Публикация
 
-Опубликованная версия: https://claude.ai/artifact/37QvPYEUV6LgecddVT6yK8
+- Сайт на GitHub Pages (открывается у всех): https://larisazlife-ui.github.io/waib/
+- Артефакт Claude (приватный, доступ через меню Share): https://claude.ai/artifact/37QvPYEUV6LgecddVT6yK8
+
+GitHub Pages публикует папку проекта из ветки `main` как есть: `index.html` в корне и есть приложение.
 
 Артефакт — это один HTML-файл. Его собирает скрипт:
 
